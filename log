@@ -1,0 +1,297 @@
+2011-05-09 12:41:17,788 - DTN - INFO - SiteManager started
+2011-05-09 12:41:17,789 - DTN - DEBUG - listening on port 5555
+2011-05-09 12:41:17,789 - DTN - DEBUG - listening on port 7777
+2011-05-09 12:41:17,790 - DTN - DEBUG - opening udp port 4445
+2011-05-09 12:41:18,461 - DTN - DEBUG - 1304937114314 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 12:41:18,721 - DTN - DEBUG - 1304937114574 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 12:41:19,341 - DTN - DEBUG - 1304937115194 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 12:41:19,515 - DTN - DEBUG - 1304937115324 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 12:41:19,731 - DTN - DEBUG - 1304937115584 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 12:41:20,352 - DTN - DEBUG - 1304937116204 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 12:41:20,543 - DTN - DEBUG - 1304937116324 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 12:41:20,751 - DTN - DEBUG - 1304937116584 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:00:37,998 - DTN - INFO - SiteManager started
+2011-05-09 13:00:38,001 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:00:38,004 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:00:38,006 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:00:38,138 - DTN - DEBUG - 1304938273854 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:00:39,038 - DTN - DEBUG - 1304938274754 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:00:39,213 - DTN - DEBUG - 1304938274854 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:00:39,418 - DTN - DEBUG - 1304938275134 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:00:40,048 - DTN - DEBUG - 1304938275764 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:00:40,204 - DTN - DEBUG - 1304938275854 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:00:40,418 - DTN - DEBUG - 1304938276134 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:04:05,680 - DTN - INFO - SiteManager started
+2011-05-09 13:04:05,683 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:04:05,686 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:04:05,689 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:04:05,713 - DTN - DEBUG - 1304938481404 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:04:05,906 - DTN - DEBUG - 1304938481524 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:04:06,113 - DTN - DEBUG - 1304938481804 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:04:06,723 - DTN - DEBUG - 1304938482414 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:04:06,879 - DTN - DEBUG - 1304938482524 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:04:07,120 - DTN - DEBUG - 1304938482804 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:04:07,723 - DTN - DEBUG - 1304938483414 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:04:07,865 - DTN - DEBUG - 1304938483524 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:04:08,123 - DTN - DEBUG - 1304938483814 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:04:08,726 - DTN - DEBUG - 1304938484414 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:04:08,922 - DTN - DEBUG - 1304938484534 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:04:09,123 - DTN - DEBUG - 1304938484814 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:48:07,839 - DTN - INFO - SiteManager started
+2011-05-09 13:48:50,881 - DTN - INFO - SiteManager started
+2011-05-09 13:48:50,889 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:48:50,891 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:48:50,893 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:50:28,356 - DTN - INFO - SiteManager started
+2011-05-09 13:50:28,360 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:50:28,367 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:50:28,370 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:50:50,388 - DTN - INFO - SiteManager started
+2011-05-09 13:50:50,391 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:50:50,393 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:50:50,395 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:51:15,966 - DTN - INFO - SiteManager started
+2011-05-09 13:51:15,969 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:51:15,975 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:51:15,978 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:51:40,824 - DTN - INFO - SiteManager started
+2011-05-09 13:51:40,829 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:51:40,831 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:51:40,833 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:51:54,779 - DTN - INFO - SiteManager started
+2011-05-09 13:51:54,783 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:51:54,785 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:51:54,787 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:52:34,445 - DTN - INFO - SiteManager started
+2011-05-09 13:52:34,448 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:52:34,451 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:52:34,452 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:53:58,546 - DTN - INFO - SiteManager started
+2011-05-09 13:53:58,549 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:53:58,552 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:53:58,554 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:54:11,497 - DTN - INFO - SiteManager started
+2011-05-09 13:54:11,501 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:54:11,504 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:54:11,505 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:55:20,291 - DTN - INFO - SiteManager started
+2011-05-09 13:55:20,294 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:55:20,296 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:55:20,299 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:55:49,303 - DTN - INFO - SiteManager started
+2011-05-09 13:55:49,307 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:55:49,314 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:55:49,316 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:56:13,368 - DTN - INFO - SiteManager started
+2011-05-09 13:56:13,371 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:56:13,374 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:56:13,376 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:56:55,541 - DTN - INFO - SiteManager started
+2011-05-09 13:56:55,552 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:56:55,554 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:56:55,560 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:56:56,188 - DTN - DEBUG - 1304941651430 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:56:56,448 - DTN - DEBUG - 1304941651690 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:56:57,198 - DTN - DEBUG - 1304941652440 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:56:57,449 - DTN - DEBUG - 1304941652690 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:56:57,608 - DTN - DEBUG - 1304941652700 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:56:58,209 - DTN - DEBUG - 1304941653450 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:57:10,955 - DTN - INFO - SiteManager started
+2011-05-09 13:57:10,963 - DTN - DEBUG - listening on port 5555
+2011-05-09 13:57:10,970 - DTN - DEBUG - listening on port 7777
+2011-05-09 13:57:10,972 - DTN - DEBUG - opening udp port 4445
+2011-05-09 13:57:11,260 - DTN - DEBUG - 1304941666500 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:57:11,500 - DTN - DEBUG - 1304941666740 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:57:11,666 - DTN - DEBUG - 1304941666760 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:57:12,260 - DTN - DEBUG - 1304941667500 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:57:12,511 - DTN - DEBUG - 1304941667750 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:57:12,655 - DTN - DEBUG - 1304941667760 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:57:13,260 - DTN - DEBUG - 1304941668500 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:57:13,511 - DTN - DEBUG - 1304941668750 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:57:13,753 - DTN - DEBUG - 1304941668760 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:57:14,260 - DTN - DEBUG - 1304941669500 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:57:14,511 - DTN - DEBUG - 1304941669750 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:57:14,643 - DTN - DEBUG - 1304941669760 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:57:15,271 - DTN - DEBUG - 1304941670510 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:57:15,522 - DTN - DEBUG - 1304941670760 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:57:15,669 - DTN - DEBUG - 1304941670761 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 13:57:16,271 - DTN - DEBUG - 1304941671510 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 13:57:16,521 - DTN - DEBUG - 1304941671760 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 13:57:16,738 - DTN - DEBUG - 1304941671770 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 14:54:25,670 - DTN - DEBUG - listening on port 5555
+2011-05-09 14:54:25,675 - DTN - DEBUG - listening on port 7777
+2011-05-09 14:54:25,677 - DTN - DEBUG - opening udp port 4445
+2011-05-09 14:54:25,677 - DTN - ERROR - error binding socket to 130.238.8.164 : 7777
+2011-05-09 14:55:30,214 - DTN - DEBUG - listening on port 5555
+2011-05-09 14:55:30,215 - DTN - DEBUG - listening on port 7777
+2011-05-09 14:55:30,215 - DTN - DEBUG - opening udp port 4445
+2011-05-09 14:55:30,215 - DTN - ERROR - error binding socket to 130.238.8.164 : 7777
+2011-05-09 14:56:35,418 - DTN - DEBUG - listening on port 5555
+2011-05-09 14:56:44,047 - DTN - DEBUG - listening on port 5555
+2011-05-09 14:56:44,048 - DTN - DEBUG - opening udp port 4445
+2011-05-09 14:56:44,048 - DTN - DEBUG - listening on port 7777
+2011-05-09 14:57:41,443 - DTN - DEBUG - listening on port 5555
+2011-05-09 14:57:41,451 - DTN - DEBUG - opening udp port 4445
+2011-05-09 14:57:41,453 - DTN - DEBUG - listening on port 7777
+2011-05-09 14:58:06,377 - DTN - DEBUG - listening on port 5555
+2011-05-09 14:58:06,382 - DTN - DEBUG - opening udp port 4445
+2011-05-09 14:58:06,384 - DTN - DEBUG - listening on port 7777
+2011-05-09 14:58:33,711 - DTN - DEBUG - listening on port 5555
+2011-05-09 14:58:33,714 - DTN - DEBUG - opening udp port 4445
+2011-05-09 14:58:33,716 - DTN - DEBUG - listening on port 7777
+2011-05-09 14:59:03,535 - DTN - DEBUG - listening on port 5555
+2011-05-09 14:59:03,538 - DTN - DEBUG - opening udp port 4445
+2011-05-09 14:59:03,543 - DTN - DEBUG - listening on port 7777
+2011-05-09 14:59:49,786 - DTN - DEBUG - listening on port 5555
+2011-05-09 14:59:49,790 - DTN - DEBUG - opening udp port 4445
+2011-05-09 14:59:49,793 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:00:02,851 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:00:02,862 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:00:02,866 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:09:06,326 - DTN - ERROR - error binding socket to 130.238.8.164 : 5555
+2011-05-09 15:09:14,502 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:09:14,514 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:09:14,514 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:09:14,515 - DTN - ERROR - error
+2011-05-09 15:12:05,727 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:12:05,730 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:12:05,732 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:12:05,733 - DTN - ERROR - error
+2011-05-09 15:12:21,967 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:12:21,982 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:12:21,982 - DTN - DEBUG - opening udp port 3445
+2011-05-09 15:12:21,983 - DTN - ERROR - error
+2011-05-09 15:12:51,678 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:12:51,682 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:12:51,684 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:12:51,684 - DTN - ERROR - error
+2011-05-09 15:13:18,758 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:13:18,769 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:13:18,773 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:13:18,774 - DTN - ERROR - error
+2011-05-09 15:13:30,265 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:13:30,268 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:13:30,272 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:13:30,273 - DTN - ERROR - error
+2011-05-09 15:13:39,261 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:13:39,263 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:13:39,265 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:13:39,268 - DTN - ERROR - error
+2011-05-09 15:13:43,309 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:13:43,313 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:13:43,315 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:13:43,317 - DTN - ERROR - error
+2011-05-09 15:13:55,752 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:13:55,759 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:13:55,762 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:13:55,766 - DTN - ERROR - error
+2011-05-09 15:14:00,500 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:14:00,503 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:14:00,505 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:14:00,509 - DTN - ERROR - error
+2011-05-09 15:14:11,050 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:14:11,051 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:14:11,051 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:14:11,051 - DTN - ERROR - error
+2011-05-09 15:14:25,618 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:14:25,628 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:14:25,634 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:14:25,634 - DTN - ERROR - error
+2011-05-09 15:14:56,928 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:14:56,936 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:14:56,938 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:14:56,940 - DTN - ERROR - error
+2011-05-09 15:15:02,044 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:15:02,050 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:15:02,054 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:15:02,058 - DTN - ERROR - error
+2011-05-09 15:15:16,093 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:15:16,096 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:15:16,099 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:15:16,099 - DTN - ERROR - error
+2011-05-09 15:15:23,529 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:15:23,532 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:15:23,535 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:15:23,535 - DTN - ERROR - error
+2011-05-09 15:15:27,182 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:15:27,184 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:15:27,210 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:15:27,210 - DTN - ERROR - error
+2011-05-09 15:15:44,326 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:15:44,333 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:15:44,338 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:15:44,339 - DTN - ERROR - error
+2011-05-09 15:16:13,733 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:16:13,743 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:16:13,745 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:16:13,746 - DTN - ERROR - error
+2011-05-09 15:16:25,186 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:16:25,195 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:16:25,200 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:16:25,201 - DTN - ERROR - error
+2011-05-09 15:16:35,653 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:16:35,656 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:16:35,659 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:16:36,126 - DTN - DEBUG - 1304946430653 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 15:16:36,325 - DTN - DEBUG - 1304946430853 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 15:16:46,960 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:16:46,963 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:16:46,968 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:16:46,969 - DTN - ERROR - error
+2011-05-09 15:17:01,546 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:17:01,550 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:17:01,558 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:17:01,560 - DTN - ERROR - error
+2011-05-09 15:17:22,234 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:17:22,240 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:17:22,248 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:17:31,706 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:17:31,710 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:17:31,718 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:17:48,723 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:17:48,727 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:17:48,729 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:19:35,010 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:19:35,021 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:19:35,021 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:19:48,553 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:19:48,563 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:19:48,572 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:19:48,572 - DTN - ERROR - <type 'exceptions.TypeError'>
+2011-05-09 15:20:35,750 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:20:35,753 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:20:35,755 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:20:35,756 - DTN - ERROR - <type 'exceptions.TypeError'>
+2011-05-09 15:20:45,687 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:20:45,698 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:20:45,700 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:20:45,701 - DTN - ERROR - <type 'exceptions.TypeError'>
+2011-05-09 15:20:51,691 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:20:51,694 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:20:51,697 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:20:51,700 - DTN - ERROR - <type 'exceptions.TypeError'>
+2011-05-09 15:21:02,566 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:21:02,569 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:21:02,572 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:21:02,574 - DTN - ERROR - <type 'exceptions.TypeError'>
+2011-05-09 15:21:36,847 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:21:36,856 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:21:36,858 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:21:36,858 - DTN - ERROR - <type 'exceptions.TypeError'>
+2011-05-09 15:22:05,820 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:22:05,824 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:22:05,826 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:22:06,125 - DTN - DEBUG - 1304946760613 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 15:22:06,322 - DTN - DEBUG - 1304946760743 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 15:22:07,135 - DTN - DEBUG - 1304946761623 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 15:22:07,281 - DTN - DEBUG - 1304946761743 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 15:31:05,142 - DTN - DEBUG - listening on port 5555
+2011-05-09 15:31:05,146 - DTN - DEBUG - listening on port 7777
+2011-05-09 15:31:05,148 - DTN - DEBUG - opening udp port 4445
+2011-05-09 15:31:05,819 - DTN - DEBUG - 1304947300243 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 15:31:05,959 - DTN - DEBUG - 1304947300383 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 15:31:06,199 - DTN - DEBUG - 1304947300623 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 15:31:06,819 - DTN - DEBUG - 1304947301243 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}
+2011-05-09 15:31:06,977 - DTN - DEBUG - 1304947301383 130.238.8.154:7014 PING telosb_M4A7J5MB {position=>wgs84,17.647111270986972,59.83814799383743,62.99983780365437;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.4;hub_devid=>2;bus=>2;devid=>5;}
+2011-05-09 15:31:07,209 - DTN - DEBUG - 1304947301633 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}
+2011-05-09 15:31:07,829 - DTN - DEBUG - 1304947302253 130.238.8.154:7015 PING telosb_M4A7J5LY {position=>wgs84,17.64709911699992,59.83817456661346,62.999842930585146;is_attached=>yes;type=>WSN node;platform=>telosb;usb_path=>1.5;hub_devid=>2;bus=>2;devid=>4;}

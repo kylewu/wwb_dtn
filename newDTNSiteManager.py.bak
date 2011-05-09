@@ -1,0 +1,322 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+'''
+
+    Author:
+        Wenbin Wu <admin@wenbinwu.com>
+        http://www.wenbinwu.com
+ 
+    File:             DTNSiteManager.py
+    Create Date:      Wed Feb 16 11:13:04 2011
+
+'''
+import sys
+import select
+import socket 
+import threading
+import signal
+
+import DTN
+from DTN import logger
+from DTNDatabase import DTNDatabase
+from DTNConnection import DTNCarrier
+from DTNConnection import DTNConnection
+import DTNMsgHandler
+
+
+class SiteManager(threading.Thread):
+
+    def __init__(self, mode, **kwargs):
+        threading.Thread.__init__(self)
+
+        # MODE
+        self.mode = mode
+
+        # Port and Socket
+        self.dtn_port = kwargs.get('dtn_port', 5555)
+        self.dtn_listen = None
+        self.bcast_port = kwargs.get('bcast_port', 6666)
+        self.bcast_listen = None
+
+        if self.mode == 'SERVER_SM':
+            self.monitor_port = kwargs.get('monitor_port', 7777)
+            self.monitor_listen = None
+            self.monitor_sockets = list()
+        elif self.mode == 'CLIENT_SM':
+            self.vclient_port = kwargs.get('vclient_port', 8888)
+            self.vclient_listen = None
+            self.vclient_sockets = list()
+
+        # Server Info
+        self.server_ip = kwargs.get('server_ip', '')
+        self.server_port = kwargs.get('server_port', 0)
+
+        # dtn connection
+        if self.mode == 'SERVER_SM':
+            self.dtn = list()
+        elif self.mode == 'CLIENT_SM':
+            self.client = DTNConnection(None, self, 'CLIENT')
+
+        self.my_ip = kwargs.get('ip', socket.gethostbyname(socket.gethostname()))
+
+        # Database
+        self.db = DTNDatabase(self.mode)
+
+        self.bufs = dict()
+        self.started = False
+
+        # flags
+        self.stop_flag = False
+
+        # signal
+        signal.signal(signal.SIGINT, self.sighandler)
+        
+        # open listener
+        self.open_listener()
+
+        logger.info('SiteManager started')
+
+
+    # FIXME
+    def sighandler(self, signum, frame):
+        self.stop()
+
+    def open_listener(self):
+        self.dtn_listen = DTN._tcp_listen(self.my_ip, self.dtn_port)
+        self.bcast_listen = DTN._broadcast_listen(self.bcast_port)
+        if self.mode == 'SERVER_SM':
+            self.monitor_listen = DTN._tcp_listen(self.my_ip, self.monitor_port)
+        elif self.mode == 'CLIENT_SM':
+            self.vclient_listen = DTN._udp_open(self.my_ip, self.vclient_port)
+
+
+    def stop(self):
+        self.stop_flag = True
+        if self.mode == 'SERVER_SM':
+            for s in self.dtn:
+                s.stop()
+
+            for d in self.dtn:
+                d.join()
+
+            if self.started:
+                self.started = False
+                self.join()
+        elif self.mode == 'CLIENT_SM':
+
+            self.client.stop()
+            self.stop_flag = True
+
+            if self.started:
+                self.started = False
+                self.join()
+
+    def quit(self):
+        self.stop()
+        self.close_listener()
+        if self.mode == 'SERVER_SM':
+            for s in self.monitor_sockets:
+                DTN._cleanup_socket(s)
+        elif self.mode == 'CLIENT_SM':
+            for s in self.vclient_sockets:
+                DTN._cleanup_socket(s)
+
+    def close_listener(self):
+        if self.mode == 'SERVER_SM':
+            li = [self.monitor_listen]
+        elif self.mode == 'CLIENT_SM':
+            li = [self.vclient_listen]
+
+        for s in [self.dtn_listen, self.bcast_listen] + li:
+            if s is not None:
+                DTN._cleanup_socket(s)
+
+    def work(self):
+        readers = [self.dtn_listen, self.bcast_listen]
+        if self.mode == 'SERVER_SM':
+            readers += self.monitor_sockets + [self.monitor_listen]
+        elif self.mode == 'CLIENT_SM':
+            readers += self.vclient_sockets + [self.vclient_listen]
+
+        try:
+            # FIXME Should I remove this timeout 2 parameter
+            ready_to_read, ready_to_write, in_error = select.select(readers, [], [], 2)
+        except:
+            return
+
+        for r in ready_to_read:
+
+            if self.stop_flag:
+                break
+
+            if r == self.dtn_listen:
+                logger.debug('new DTN connection')
+                conn, remote = r.accept()
+                if self.mode == 'SERVER_SM':
+                    server = DTNConnection(conn, self, 'SERVER', cb=self.notify_monitors)
+                    self.dtn.append(server)
+                    server.start()
+                elif self.mode == 'CLIENT_SM':
+                    if self.client.conn is None:
+                        self.client= DTNConnection(conn, self, 'CLIENT')
+                        self.client.start()
+                continue
+
+            # FIXME
+            if r == self.bcast_listen:
+                msg , addr = r.recvfrom(65535)
+
+                if self.mode == 'CLIENT_SM' and self.client.conn is not None:
+                    continue
+            
+                if msg == CARRIER_PING:
+
+                    logger.debug('recv broadcast %s from %s' % (msg, addr))
+
+                    r.sendto(CARRIER_PONG + '%s %s' % (self.dtn_port, self.mode), (addr[0], addr[1]))
+
+                continue
+
+            if self.mode == 'SERVER_SM' and r == self.monitor_listen:
+                con, remote = r.accept()
+                print "Monitor connected \n", remote
+                self.bufs[con] = ''
+                self.monitor_sockets.append(con)
+                continue
+            
+
+            if self.mode == 'CLIENT_SM' and r == self.vclient_listen:
+                chunk = r.recv(1024)
+                if chunk == '':
+                    print "UDP error", r
+                    sys.exit(1)
+                else:
+                    logger.debug(chunk)
+                    msg = DTNMsgHandler.handle(chunk)
+                    if msg is not None:
+                        print msg[1]
+                        self.db.insert_tuple(msg[1])
+                    #self.db.insert(chunk)
+                continue
+        
+
+            if self.mode == 'CLIENT_SM' and r in self.vclient_sockets:
+
+                chunk = r.recv(1024)
+                print self.name + ': receive data from vclient ->' + chunk
+                if chunk == '':
+                    print self.name + ": Vclient disconnected", r
+                    self.vclient_sockets.remove(r)
+                    DTN._cleanup_socket(r)
+
+                else:
+                    self.bufs[r] += chunk
+
+                    while self.bufs[r].find('\n') >= 0:
+                        msg, self.bufs[r] = self.bufs[r].split('\n', 1)
+                        self.db.insert(msg)
+
+                continue
+
+
+    def run(self):
+        self.started = True
+        while not self.stop_flag:
+            try:
+                self.work()
+            except:
+                logger.error('error')
+                break
+
+    def notify_monitors(self, msg):
+        for m in self.monitor_sockets:
+            logger.debug('sending to monitor %s'% msg)
+            try:
+                m.send(msg + '\n')
+            except socket.error:
+                print "Error sending to ", m
+                self.monitor_sockets.remove(m)
+
+    def connect_to_server(self):
+        # try to connect to server
+        conn = None
+        print 'connecting'
+        conn = DTN._tcp_connect(self.server_ip, self.server_port)
+
+        if conn is not None:
+            self.client= DTNConnection(conn, self, 'CLIENT')
+            self.client.start()
+            return True
+
+        return False
+
+CARRIER_PING = "I'M CARRIER"
+CARRIER_PONG = "DTN PORT "
+class SiteManagerCarrier():
+
+    def __init__(self):
+
+        self.server_ip = ''
+        self.server_port = 0
+
+        self.db = DTNDatabase(self.name)
+
+        self.carrier = DTNCarrier(self)
+
+        signal.signal(signal.SIGINT, self.sighandler)
+        
+    def sighandler(self, signum, frame):
+        self.stop()
+
+    def bcast(self, bcast_port):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        s.sendto(CARRIER_PING, ('<broadcast>', bcast_port))
+
+        s.settimeout(2)
+
+        try:
+            (buf, addr) = s.recvfrom(2048)
+            print "Received from %s: %s" % (addr, buf)
+            l = buf.split()
+            if len(l) == 4:
+                self.server_port = int(l[2])
+                self.server_ip = addr[0]
+                if l[3] == 'SERVER':
+                    self.mode = 'client'
+                elif l[3] == 'CLIENT':
+                    self.mode = 'server'
+                else:
+                    s.close()
+                    return False
+
+                s.close()
+                return True
+
+        except:
+            print 'no feedback'
+            s.close()
+
+        return False
+
+    def connect_to_server(self):
+        # try to connect to server
+        conn = None
+        conn = DTN._tcp_connect(self.server_ip, self.server_port)
+
+        if conn is not None:
+            if self.carrier is not None:
+                self.carrier = None
+            self.carrier = DTNCarrier(self)
+            self.carrier.conn = conn
+            self.carrier.mode = self.mode
+            return True
+        
+        return False
+
+    def start(self):
+        self.carrier.start()
+
+    def stop(self):
+        self.carrier.stop()
