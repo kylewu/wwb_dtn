@@ -28,14 +28,6 @@ class DTNDatabase():
         #self._create_db()
 
     def _create_db(self):
-        """ RECV
-            data is received if sent == -1
-            SEND
-            data is sent but no ack    if sent == 1 and ack == 0
-            data is sent and ack       if sent == 1 and ack == 1
-            data is not sent if sent == 0
-            """
-            
         conn = sqlite3.connect(self.db_name, check_same_thread = False)
         c = conn.cursor()
         c.executescript('''
@@ -43,6 +35,13 @@ class DTNDatabase():
             text, src text, dst text, type text, data text);
             ''')
 
+    def insert_msg(self, m):
+        conn = sqlite3.connect(self.db_name)
+        conn.execute('insert into data values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', m.to_tuple())
+        conn.commit()
+        conn.close()
+
+    # FIXME old
     def insert_tuple(self, t):
         conn = sqlite3.connect(self.db_name)
         conn.execute('insert into data values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', t)
@@ -72,6 +71,7 @@ class DTNDatabase():
         msgs = self.execute(cla)
         return msgs
 
+    # FIXME old, to be removed
     def select_type(self, m):
         conn = sqlite3.connect(self.db_name)
         t = (m,)
@@ -80,8 +80,11 @@ class DTNDatabase():
         conn.close()
         return msgs
 
-
+    
     def execute(self, s):
+        """ A function for handling common script
+            Only for test
+        """
         conn = sqlite3.connect(self.db_name)
         cur = conn.execute(s)
         msgs = cur.fetchall()
@@ -95,7 +98,7 @@ class DTNDatabase():
         return m.digest().encode('hex')
 
 if __name__ == '__main__':
-    ##### FIXME #####
+    ##### TODO #####
     ##### OLD TEST #####
     db = DTNDatabase('test')
     data = '2cc2f40e95db75de9d403449f9833e43 1300803228892 130.238.8.154 7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}'

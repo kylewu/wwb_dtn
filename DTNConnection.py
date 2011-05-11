@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+__author__  = 'Wenbin Wu <admin@wenbinwu.com>'
+__credits__ = 'Python best'
+__date__    = 'Fri 11 Mar 2011 02:01:11 PM CET'
+__version__ = '0.3'
 
-    Author:
-        Wenbin Wu <admin@wenbinwu.com>
-        http://www.wenbinwu.com
- 
-    File:             DTNConnection.py
-    Create Date:      Fri 11 Mar 2011 02:01:11 PM CET
-
-'''
 import socket
 import time
 import threading

@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''
+__author__  = 'Wenbin Wu <admin@wenbinwu.com>'
+__credits__ = 'Python best'
+__date__    = 'Wed Feb 16 11:13:04 2011'
+__version__ = '0.4'
 
-    Author:
-        Wenbin Wu <admin@wenbinwu.com>
-        http://www.wenbinwu.com
- 
-    File:             DTNSiteManager.py
-    Create Date:      Wed Feb 16 11:13:04 2011
-
-'''
 import sys
 import select
 import socket 
@@ -49,7 +44,7 @@ class BaseDTNDevice(threading.Thread):
         # important when broadcasting
         self.mode = ''
 
-        # TODO find a better Database name
+        # FIXME find a better Database name
         self.db = DTNDatabase(self.__class__.__name__)
 
         # IP
@@ -70,7 +65,7 @@ class BaseDTNDevice(threading.Thread):
         # FIXME check if I need this
         self.bufs = dict()
 
-        # TODO seems does not work
+        # FIXME seems does not work
         signal.signal(signal.SIGINT, self.sighandler)
         
     def sighandler(self, signum, frame):
@@ -104,9 +99,10 @@ class BaseDTNDevice(threading.Thread):
         for s in self.vclient_sockets:
             DTN._cleanup_socket(s)
 
-    # Don't forget call this function before redefining
     def open_listener(self):
-        """ Open Listeners """
+        """ Open Listeners  
+            @rewrite if implementing subclass
+        """
         self.dtn_listen = DTN._tcp_listen(self.my_ip, self.dtn_port)
         self.bcast_listen = DTN._broadcast_listen(self.bcast_port)
 
@@ -122,6 +118,7 @@ class BaseDTNDevice(threading.Thread):
         """ Return new (variable, function) list
             f_map is a list of tuples
             [(socket, func), (socket, func)]
+            @rewrite if implementing subclass which handles more sockets
             """
         f_map = [
                 (self.dtn_listen    ,self.handle_dtn_listen),
@@ -131,8 +128,7 @@ class BaseDTNDevice(threading.Thread):
         return f_map
 
     def get_sockets(self, l):
-        """
-            return all the sockets
+        """ return all the sockets
         """
         readers = list()
         for s in l:
@@ -168,14 +164,15 @@ class BaseDTNDevice(threading.Thread):
                         s[1](r)
                         break
 
-    #TODO
     def handle_dtn_listen(self, s):
         """docstring for handle_dtn_listen"""
         logger.debug('new DTN connection')
         conn, remote = s.accept()
-        server = DTNConnection(conn, self, 'SERVER', cb=self.notify_monitors)
-        self.dtn.append(server)
-        server.start()
+        # TODO check the arguments
+        # check if conn from this ip already in dtn list
+        dtnconn = DTNConnection(conn, self, 'SERVER', cb=self.notify_monitors)
+        self.dtn.append(dtnconn)
+        dtnconn.start()
 
     def handle_bcast_listen(self, s):
         """docstring for handle_bcast_listen"""
@@ -191,10 +188,11 @@ class BaseDTNDevice(threading.Thread):
 
             s.sendto(CARRIER_PONG + '%s %s' % (self.dtn_port, self.mode), (addr[0], addr[1]))
 
+    # TODO
     def connect_to_sm(self, ip, port):
-        # try to connect to server
+        """ connect to specific IP:PORT
+        """
         conn = None
-        print 'connecting'
         conn = DTN._tcp_connect(ip, port)
 
         if conn is not None:
