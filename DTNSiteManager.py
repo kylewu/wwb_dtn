@@ -7,7 +7,7 @@
         Wenbin Wu <admin@wenbinwu.com>
         http://www.wenbinwu.com
  
-    File:             SiteManager.py
+    File:             DTNSiteManager.py
     Create Date:      Wed Feb 16 11:13:04 2011
 
 '''
@@ -20,119 +20,266 @@ import signal
 import DTN
 from DTN import logger
 from DTNDatabase import DTNDatabase
-#from DTNConnection import DTNClient
-#from DTNConnection import DTNServer
 from DTNConnection import DTNCarrier
+from DTNConnection import DTNConnection
+import DTNMsgHandler
 
+"""
+    Class inheritance
 
-CARRIER_PING = "I'M CARRIER"
-CARRIER_PONG = "DTN PORT "
+             -------------------
+             |  BaseDTNDevice  |         BCast and DTN Ports
+             -------------------
+             ^                 ^
+             |                 |
+        ------------    -------------
+        | MobileSM |    | BaseDTNSM |   Monitor and Vclient Ports
+        ------------    -------------
+                        ^           ^
+                        |           |
+                 ------------    ------------
+                 | ServerSM |    | ClientSM |
+                 ------------    ------------
 
-class SiteManager(threading.Thread):
-
-    def __init__(self, ip):
+"""
+class BaseDTNDevice(threading.Thread):
+    def __init__(self, **kwargs):
         threading.Thread.__init__(self)
-        
-        if ip is None:
-            self.my_ip = socket.gethostbyname(socket.gethostname())
-        else:
-            self.my_ip = ip
 
-        # Database
-        self.db = DTNDatabase(self.name)
+        # important when broadcasting
+        self.mode = ''
 
-        # Dst
-        self.dst_ip = ""
-        self.dst_id = ""
+        # TODO find a better Database name
+        self.db = DTNDatabase(self.__class__.__name__)
 
-        # MODE
-        self.mode = ""
+        # IP
+        self.my_ip = kwargs.get('ip', socket.gethostbyname(socket.gethostname()))
 
-        self.bufs = dict()
-        self.started = False
-
-    def open_listener(self):
-        pass
-
-    def close_listener(self):
-        pass
-
-    def work(self):
-        pass
-
-    def run(self):
-        self.started = True
-        while not self.killed:
-            try:
-                self.work()
-            except:
-                logger.error('error')
-                break
-
-class SiteManagerServer(SiteManager):
-    """ Site Manager Server
-        communicates with Monitors and has a list of DTNServer
-    """
-
-    def __init__(self, monitor_port, dtn_port, bcast_port, ip = None):
-        SiteManager.__init__(self, ip)
-
-        # ports
-        self.monitor_port = monitor_port
-        self.dtn_port = dtn_port
-        self.bcast_port = bcast_port
-
-        # Sockets Variables
-        self.monitor_listen = None
+        self.dtn_port = kwargs.get('dtn_port', 5555)
         self.dtn_listen = None
+
+        self.bcast_port = kwargs.get('bcast_port', 6666)
         self.bcast_listen = None
 
-        # monitors sockets
-        self.monitor_sockets = list()
-        # dtn connection list
+        # DTN connection list
         self.dtn = list()
 
-        # cond
-        self.killed = False
+        # stop flag
+        self.stop_flag = False
 
-        # signal
+        # FIXME check if I need this
+        self.bufs = dict()
+
+        # TODO seems does not work
         signal.signal(signal.SIGINT, self.sighandler)
         
-        # open listener
-        self.open_listener()
-
     def sighandler(self, signum, frame):
         self.stop()
 
+    def run(self):
+
+        # open listener
+        self.open_listener()
+
+        while not self.stop_flag:
+            try:
+                self.work()
+            except :
+                logger.error( sys.exc_info()[0])
+                break
+
+    # FIXME
     def stop(self):
-        self.killed = True
-        for s in self.dtn:
-            s.stop()
-
-        for d in self.dtn:
-            d.join()
-
-        if self.started:
-            self.started = False
+        self.stop_flag = True
+        self.close_all_sockets()
+        if self.isAlive():
             self.join()
 
+    # FIXME remove?
     def quit(self):
         self.stop()
         self.close_listener()
         for s in self.monitor_sockets:
             DTN._cleanup_socket(s)
+        for s in self.vclient_sockets:
+            DTN._cleanup_socket(s)
 
+    # Don't forget call this function before redefining
     def open_listener(self):
-        self.monitor_listen = DTN._tcp_listen(self.my_ip, self.monitor_port)
+        """ Open Listeners """
         self.dtn_listen = DTN._tcp_listen(self.my_ip, self.dtn_port)
         self.bcast_listen = DTN._broadcast_listen(self.bcast_port)
 
-    def close_listener(self):
-        for s in [self.monitor_listen, self.dtn_listen, self.bcast_listen]:
+    def close_all_sockets(self):
+        """ Close all sockets """
+        readers = self.get_sockets(self.f_map)
+
+        for s in readers:
             if s is not None:
                 DTN._cleanup_socket(s)
 
+    def get_handle_map(self):
+        """ Return new (variable, function) list
+            f_map is a list of tuples
+            [(socket, func), (socket, func)]
+            """
+        f_map = [
+                (self.dtn_listen    ,self.handle_dtn_listen),
+                (self.bcast_listen  ,self.handle_bcast_listen),
+                ]
+
+        return f_map
+
+    def get_sockets(self, l):
+        """
+            return all the sockets
+        """
+        readers = list()
+        for s in l:
+            if isinstance(s[0], socket.socket):
+                readers += [s[0]]
+            elif isinstance(s[0], list):
+                readers += s[0]
+
+        return readers
+
+    def work(self):
+
+        # update f_map and readers
+        f_map = self.get_handle_map()
+        readers = self.get_sockets(f_map)
+
+        try:
+            ready_to_read, ready_to_write, in_error = select.select(readers, [], [], 30)
+        except socket.timeout:
+            return
+        except:
+            logger.error('error')
+            return
+
+        for r in ready_to_read:
+            for s in f_map:
+                if isinstance(s[0], socket.socket):
+                    if r == s[0]:
+                        s[1](r)
+                        break
+                elif isinstance(s[0], list):
+                    if r in s[0]:
+                        s[1](r)
+                        break
+
+    #TODO
+    def handle_dtn_listen(self, s):
+        """docstring for handle_dtn_listen"""
+        logger.debug('new DTN connection')
+        conn, remote = s.accept()
+        server = DTNConnection(conn, self, 'SERVER', cb=self.notify_monitors)
+        self.dtn.append(server)
+        server.start()
+
+    def handle_bcast_listen(self, s):
+        """docstring for handle_bcast_listen"""
+
+        msg , addr = s.recvfrom(65535)
+
+        if self.mode == 'CLIENT_SM' and self.client.conn is not None:
+            return
+    
+        if msg == CARRIER_PING:
+
+            logger.debug('recv broadcast %s from %s' % (msg, addr))
+
+            s.sendto(CARRIER_PONG + '%s %s' % (self.dtn_port, self.mode), (addr[0], addr[1]))
+
+    def connect_to_sm(self, ip, port):
+        # try to connect to server
+        conn = None
+        print 'connecting'
+        conn = DTN._tcp_connect(ip, port)
+
+        if conn is not None:
+            self.client= DTNConnection(conn, self, 'CLIENT')
+            self.client.start()
+            return True
+
+        return False
+
+class BaseDTNSiteManager(BaseDTNDevice):
+    """ Compare to BaseDTNDevice
+        BaseDTNSiteManager supports Monitors and Vclients
+    """
+
+    def __init__(self, **kwargs):
+        BaseDTNDevice.__init__(self, **kwargs)
+
+        self.monitor_port = kwargs.get('monitor_port', 7777)
+        self.monitor_listen = None
+        self.monitor_sockets = list()
+
+        self.vclient_port = kwargs.get('vclient_port', 8888)
+        self.vclient_listen = None
+        self.vclient_sockets = list()
+
+    def get_handle_map(self):
+        """docstring for get_map"""
+        f_map = BaseDTNDevice.get_handle_map(self)
+        f_map += [
+                (self.monitor_listen,self.handle_monitor_listen),
+                (self.vclient_listen,self.handle_vclient_listen),
+                (self.monitor_sockets , self.handle_monitor_sockets),
+                (self.vclient_sockets , self.handle_vclient_sockets),
+            ]
+
+        return f_map
+
+    def open_listener(self):
+        BaseDTNDevice.open_listener(self)
+        self.monitor_listen = DTN._tcp_listen(self.my_ip, self.monitor_port)
+        self.vclient_listen = DTN._udp_open(self.my_ip, self.vclient_port)
+
+    def handle_vclient_sockets(self, r):
+        """docstring for handle_vclient_sockets"""
+        chunk = r.recv(1024)
+        print self.name + ': receive data from vclient ->' + chunk
+        if chunk == '':
+            print self.name + ": Vclient disconnected", r
+            self.vclient_sockets.remove(r)
+            DTN._cleanup_socket(r)
+
+        else:
+            self.bufs[r] += chunk
+
+            while self.bufs[r].find('\n') >= 0:
+                msg, self.bufs[r] = self.bufs[r].split('\n', 1)
+                self.db.insert(msg)
+
+    def handle_monitor_listen(self, s):
+        """docstring for handle_monitor_listen"""
+        con, remote = s.accept()
+        print "Monitor connected \n", remote
+        self.bufs[con] = ''
+        self.monitor_sockets.append(con)
+
+    def handle_monitor_sockets(self, s):
+        """docstring for handle_monitor_sockets"""
+        pass
+
+    def handle_vclient_listen(self, s):
+        chunk = s.recv(1024)
+        if chunk == '':
+            print "UDP error", s
+            sys.exit(1)
+        else:
+            logger.debug(chunk)
+            msg = DTNMsgHandler.handle(chunk)
+            if msg is not None:
+                # Notify Monitors
+                self.notify_monitors(chunk)
+                # Save into database
+                self.db.insert_tuple(msg[1:])
+    
     def notify_monitors(self, msg):
+        """ Notify Monitors when receiving a message """
         for m in self.monitor_sockets:
             logger.debug('sending to monitor %s'% msg)
             try:
@@ -141,253 +288,29 @@ class SiteManagerServer(SiteManager):
                 print "Error sending to ", m
                 self.monitor_sockets.remove(m)
 
-    #def __del__(self):
-        #self.close_listener()
-        #for s in self.monitor_sockets:
-            #DTN._cleanup_socket(s)
-
-    def work(self):
-        readers = self.monitor_sockets + [self.monitor_listen, self.dtn_listen, self.bcast_listen]
-
-        try:
-            ready_to_read, ready_to_write, in_error = select.select(readers, [], [], 2)
-        except:
-            return
-
-        for r in ready_to_read:
-
-            if self.killed:
-                break
-
-            if r == self.dtn_listen:
-                logger.debug('new DTN connection')
-                conn, remote = r.accept()
-
-                server = DTNServer(conn, self)
-                self.dtn.append(server)
-                server.start()
-                continue
-
-            if r == self.monitor_listen:
-                con, remote = r.accept()
-                print "Monitor connected \n", remote
-                self.bufs[con] = ''
-                self.monitor_sockets.append(con)
-                continue
-            
-            if r == self.bcast_listen:
-                msg , addr = r.recvfrom(65535)
-
-                if msg == CARRIER_PING:
-
-                    logger.debug('recv broadcast %s from %s' % (msg, addr))
-
-                    r.sendto(CARRIER_PONG + '%s SERVER' % self.dtn_port, (addr[0], addr[1]))
-                continue
-
-class SiteManagerClient(SiteManager):
-    """ Site Manager Client
-        gets data from VClients and send through DTConnection
-    """
-
-    def __init__(self, vclient_log_port, vclient_udp_port, dtn_port, bcast_port, server_ip, server_port, ip = None):
-        
-        SiteManager.__init__(self, ip)
-
-        # socket variables
-        self.vclient_udp_listen = None
-        self.vclient_log_listen = None
-        #self.vclient_cmd_listen = None
-        self.dtn_listen         = None
-        self.bcast_listen       = None
-
-        # ports
-        self.vclient_udp_port   = vclient_udp_port
-        self.vclient_log_port   = vclient_log_port
-        #self.vclient_cmd_port   = vclient_cmd_port
-        self.dtn_port           = dtn_port
-        self.bcast_port         = bcast_port
-
-        # server info
-        self.server_ip          = server_ip
-        self.server_port        = server_port
-
-        # vclient sockets
-        self.vclient_sockets = list()
-        #self.vclient_cmd_sockets = list()
-
-        self.bufs[self.vclient_udp_listen] = ''
-        
-        # start DTN client
-        self.client= DTNClient(self)
-
-        # cond
-        self.killed = False
-
-        # signal
-        signal.signal(signal.SIGINT, self.sighandler)
-        
-        # Open listeners
-        self.open_listener()
-
-    def sighandler(self, signum, frame):
-        self.stop()
-
-    def stop(self):
-        self.client.stop()
-        self.killed = True
-
-        if self.started:
-            self.started = False
-            #self.client.join()
-            self.join()
-        print '~~~~~~~~~~~~~~~~~~``'
-
-    def clean(self):
-        self.close_listener()
-        for s in self.vclient_sockets:
-            DTN._cleanup_socket(s)
-        print '*******************'
-
-    #def __del__(self):
-
-        #self.close_listener()
-        #for s in self.vclient_sockets:
-            #DTN._cleanup_socket(s)
-        #for s in self.vclient_cmd_sockets:
-            #DTN._cleanup_socket(s)
-            
-        #self.client.stop()
-        #self.client.__del__()
-        
-    def open_listener(self):
-
-        self.vclient_udp_listen = DTN._udp_open(self.my_ip, self.vclient_udp_port)
-        self.vclient_log_listen = DTN._tcp_listen(self.my_ip, self.vclient_log_port)
-        #self.vclient_cmd_listen = DTN._tcp_listen(self.my_ip, self.vclient_cmd_port)
-        self.dtn_listen = DTN._tcp_listen(self.my_ip, self.dtn_port)
-        self.bcast_listen = DTN._broadcast_listen(self.bcast_port)
-
-        print 'vclient log : %d, udp : %d, dtn : %d, broadcast : %d server_ip : %s, server_port : %d, ip : %s' \
-                % (self.vclient_log_port, self.vclient_udp_port, self.dtn_port, self.bcast_port, \
-                   self.server_ip, self.server_port, self.my_ip)
-
-    def close_listener(self):
-        for s in [self.vclient_udp_listen, self.vclient_log_listen, self.dtn_listen, self.bcast_listen]:
-            if s is not None:
-                DTN._cleanup_socket(s)
-
-    def distribute_cmd(self, msg):
-        pass
-
-    def connect_to_server(self):
-        # try to connect to server
-        conn = None
-        print 'connecting'
-        conn = DTN._tcp_connect(self.server_ip, self.server_port)
-
-        if conn is not None:
-            self.client= DTNClient(self)
-            self.client.conn = conn
-            self.client.start()
-            return True
-
-        return False
-
-    def work(self):
-
-        # FIXME do this in a thread
-        if self.client.conn is None:
-            self.connect_to_server()
-
-        readers = self.vclient_sockets + [self.vclient_log_listen] + [self.dtn_listen] + [self.vclient_udp_listen] + [self.bcast_listen]
-        
-        try:
-            ready_to_read, ready_to_write, in_error = select.select(readers, [], [], 2)
-        except:
-            return
-
-        for r in ready_to_read:
-            if self.killed:
-                break
-
-            # new vclient udp connection
-            if r == self.vclient_udp_listen:
-                
-                chunk = r.recv(1024)
-                if chunk == '':
-                    print "UDP error", r
-                    sys.exit(1)
-
-                else:
-                    self.db.insert(chunk)
-                    
-                continue
-
-            if r in self.vclient_sockets:
-
-                chunk = r.recv(1024)
-                print self.name + ': receive data from vclient ->' + chunk
-                if chunk == '':
-                    print self.name + ": Vclient disconnected", r
-                    self.vclient_sockets.remove(r)
-                    DTN._cleanup_socket(r)
-
-                else:
-                    self.bufs[r] += chunk
-
-                    while self.bufs[r].find('\n') >= 0:
-                        msg, self.bufs[r] = self.bufs[r].split('\n', 1)
-                        self.db.insert(msg)
-
-                continue
-
-            # new vclient log
-            if r == self.vclient_log_listen:
-                conn, remote = r.accept()
-                print "DT: Vclient connected \n", remote
-                self.bufs[conn] = ''
-                self.vclient_sockets.append(conn)
-
-                continue
-
-            # new vclient cmd
-            #if r == self.vclient_cmd_listen:
-                ## TODO To get this feature, I need to change VClient Source Code
-                #conn, remote = r.accept()
-                #print "DT: Vclient cmd socket established \n"
-
-                #chunk = r.recv(1024)
-                #self.bufs[r] += chunk
-                #while self.bufs[r].find('\n') >= 0:
-                    #msg, self.bufs[r] = self.bufs[r].split('\n', 1)
-                    ## TODO Get sensor information from msg, or distribute cmd to all sensors
-                #self.vclient_cmd_sockets.append(("sensor_id", conn))
-
-            if r == self.dtn_listen:
-                print self.name + ': new DTN connection'
-                conn, remote = r.accept()
-                if self.client.killed:
-                    self.client.join()
-                elif self.client.conn is not None:
-                    continue
-                self.client= DTNClient(self)
-                self.client.conn = conn
-                self.client.start()
-
-            if r == self.bcast_listen:
-                msg , addr = r.recvfrom(65535)
-
-                if self.client.conn is not None:
-                    continue
-
-                if msg == CARRIER_PING:
-
-                    logger.debug('recv broadcast %s from %s' % (msg, addr))
-
-                    r.sendto(CARRIER_PONG + '%s CLIENT' % self.dtn_port, (addr[0], addr[1]))
+class ServerSiteManager(BaseDTNSiteManager):
+    def __init__(self, **kwargs):
+        BaseDTNSiteManager.__init__(self, **kwargs)
+        # MODE
+        self.mode = 'SERVER'
 
 
+class ClientSiteManager(BaseDTNSiteManager):
+    def __init__(self, **kwargs):
+        BaseDTNSiteManager.__init__(self, **kwargs)
+
+        self.mode = 'CLIENT'
+        # Server Info
+        self.server_ip = kwargs.get('server_ip', '')
+        self.server_port = kwargs.get('server_port', 0)
+
+class MobileSiteManager(BaseDTNDevice):
+    def __init__(self):
+        self.db = DTNDatabase(self.__class__.__name__)
+        #self.dtn = DTNConnection(bbbbbbbbbbb)
+
+CARRIER_PING = "I'M CARRIER"
+CARRIER_PONG = "DTN PORT "
 class SiteManagerCarrier():
 
     def __init__(self):
