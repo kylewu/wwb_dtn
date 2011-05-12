@@ -9,6 +9,10 @@ __version__ = '0.1'
 import hashlib
 import re
 
+# NOTE
+# TIMESTAMP used in VClient is time.tv_sec*1000 + time.tv_usec/1000
+# In python, we can get this by using int(time.time()*1000)
+
 # -----------------------------------------------------
 # PING msg from VClient
 PING_SEND_re = re.compile("(?P<time>\d+) (?P<ip>[\d+\.]+):(?P<port>\d+) PING (?P<src>[^ ]*) {(?P<attributes>[^}]+)}.*")
@@ -36,6 +40,7 @@ class DTNMessage():
         self.sent_time = ''
         self.ack  = 0
         self.ack_time = ''
+        self.ttl = 2*24*60*60   # 2d
         self.time = ''
         self.ip   = ''
         self.port = ''
@@ -55,6 +60,11 @@ class DTNMessage():
 
     def to_tuple(self):
         return None, self.hash, self.sent, self.ack, self.time, self.ip, self.port, self.src, self.dst, self.type, self.data 
+
+    # TODO
+    def to_msg(self):
+        if self.re_type == 'PING_SEND':
+            return self.msg+'\n'
 
 
     ###########

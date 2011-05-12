@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+__author__  = 'Wenbin Wu <admin@wenbinwu.com>'
+__credits__ = 'Python best'
+__date__    = 'Mon 21 Mar 2011 01:53:27 PM CET'
+__version__ = '0.3'
 
-'''
-
-    Author:
-        Wenbin Wu <admin@wenbinwu.com>
-        http://www.wenbinwu.com
- 
-    File:             DTNDatabase.py
-    Create Date:      Mon 21 Mar 2011 01:53:27 PM CET
-
-'''
 import os
 import sqlite3
 import hashlib

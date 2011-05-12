@@ -15,7 +15,7 @@ import signal
 import DTN
 from DTN import logger
 from DTNDatabase import DTNDatabase
-from DTNConnection import DTNCarrier
+#from DTNConnection import DTNCarrier
 from DTNConnection import DTNConnection
 import DTNMsgHandler
 
@@ -37,6 +37,10 @@ import DTNMsgHandler
                  ------------    ------------
 
 """
+
+MOBILE_SH_INFO = 'mobile'
+SERVER_SH_INFO = 'server'
+
 class BaseDTNDevice(threading.Thread):
     def __init__(self, **kwargs):
         threading.Thread.__init__(self)
@@ -56,8 +60,25 @@ class BaseDTNDevice(threading.Thread):
         self.bcast_port = kwargs.get('bcast_port', 6666)
         self.bcast_listen = None
 
-        # DTN connection list
-        self.dtn = list()
+        # Sensor Host Information
+        # = server if it is Server Site Manager
+        # = mobile if it is Mobile Site Manager
+        self.sh = kwargs.get('sh', '')
+
+        # Target
+        # * means all
+        # or a list of SH
+        # Normally, server needs *
+        #           client needs data of its own sh
+        self.target = kwargs.get('target', '*')
+
+        # DTN connection dict
+        # (SH, DTNConn)
+        self.dtn = dict()
+
+        # The last message received 
+        # (SH, HASH)
+        self.last_hash = dict()
 
         # stop flag
         self.stop_flag = False
@@ -80,7 +101,7 @@ class BaseDTNDevice(threading.Thread):
             try:
                 self.work()
             except :
-                logger.error( sys.exc_info()[0])
+                logger.error(sys.exc_info()[0])
                 break
 
     # FIXME
@@ -89,15 +110,6 @@ class BaseDTNDevice(threading.Thread):
         self.close_all_sockets()
         if self.isAlive():
             self.join()
-
-    # FIXME remove?
-    def quit(self):
-        self.stop()
-        self.close_listener()
-        for s in self.monitor_sockets:
-            DTN._cleanup_socket(s)
-        for s in self.vclient_sockets:
-            DTN._cleanup_socket(s)
 
     def open_listener(self):
         """ Open Listeners  
@@ -165,14 +177,26 @@ class BaseDTNDevice(threading.Thread):
                         break
 
     def handle_dtn_listen(self, s):
-        """docstring for handle_dtn_listen"""
-        logger.debug('new DTN connection')
+        logger.debug('try to build new DTNConnection')
+
         conn, remote = s.accept()
-        # TODO check the arguments
-        # check if conn from this ip already in dtn list
-        dtnconn = DTNConnection(conn, self, 'SERVER', cb=self.notify_monitors)
-        self.dtn.append(dtnconn)
-        dtnconn.start()
+
+        meta = conn.recv(65535)
+        port = int(meta.split()[0])
+        sh = meta.split()[1]
+
+        # remote[0] is IP
+        # remote[1] is PORT
+        conn_send = DTN._tcp_connect(remote[0], port)
+
+        if conn_send is not None:
+            conn_send.send(self.sh)
+
+            dtn_conn = DTNConnection(conn_send, conn, self.target, self.sh, self)
+            self.dtn[sh] = dtn_conn
+            dtn_conn.start()
+        else:
+            conn.send('error')
 
     def handle_bcast_listen(self, s):
         """docstring for handle_bcast_listen"""
@@ -192,13 +216,36 @@ class BaseDTNDevice(threading.Thread):
     def connect_to_sm(self, ip, port):
         """ connect to specific IP:PORT
         """
+        # Generate a random port for listening
+        random_n = 1
+        while True:
+            try:
+                listener = DTN._tcp_listen(self.my_ip, self.dtn_port+random_n)
+            except:
+                random_n += 1
+                continue
+
+            break
         conn = None
         conn = DTN._tcp_connect(ip, port)
 
         if conn is not None:
-            self.client= DTNConnection(conn, self, 'CLIENT')
-            self.client.start()
+
+            # send port information
+            conn.send('%d %s\n' % (self.dtn_port + random_n, self.sh))
+
+            # wait for connection
+            conn_recv, remote = listener.accept()
+            sh = conn_recv.recv(1024)
+
+            dtn_conn = DTNConnection(conn, conn_recv, self.target, self.sh, self)
+            self.dtn[sh] = dtn_conn
+            dtn_conn.start()
+
+            DTN._cleanup_socket(listener)
             return True
+
+        DTN._cleanup_socket(listener)
 
         return False
 
@@ -291,6 +338,8 @@ class ServerSiteManager(BaseDTNSiteManager):
         BaseDTNSiteManager.__init__(self, **kwargs)
         # MODE
         self.mode = 'SERVER'
+        self.sh = SERVER_SH_INFO
+
 
 
 class ClientSiteManager(BaseDTNSiteManager):
@@ -305,6 +354,7 @@ class ClientSiteManager(BaseDTNSiteManager):
 class MobileSiteManager(BaseDTNDevice):
     def __init__(self):
         self.db = DTNDatabase(self.__class__.__name__)
+        self.sh = MOBILE_SH_INFO
         #self.dtn = DTNConnection(bbbbbbbbbbb)
 
 CARRIER_PING = "I'M CARRIER"
