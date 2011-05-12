@@ -162,9 +162,7 @@ class BaseDTNDevice(threading.Thread):
         # update f_map and readers
         f_map = self.get_handle_map()
         readers = self.get_sockets(f_map)
-        print len(readers)
 
-        print readers
         try:
             ready_to_read, ready_to_write, in_error = select.select(readers, [], [], 3)
         except socket.timeout:
@@ -174,7 +172,6 @@ class BaseDTNDevice(threading.Thread):
             return
 
         for r in ready_to_read:
-            print 'abc'
             for s in f_map:
                 if isinstance(s[0], socket.socket):
                     if r == s[0]:
@@ -192,7 +189,8 @@ class BaseDTNDevice(threading.Thread):
 
         msg , addr = s.recvfrom(65535)
 
-        s.sendto('%d\n' % self.dtn_port)
+        # send back DTN Port
+        s.sendto('%d' % self.dtn_port, addr)
 
     def bcast(self, bcast_port):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -202,23 +200,10 @@ class BaseDTNDevice(threading.Thread):
         s.settimeout(2)
 
         try:
-            (buf, addr) = s.recvfrom(2048)
+            buf, addr = s.recvfrom(2048)
             logger.info('Received from %s: %s' % (addr, buf))
 
-            #l = buf.split()
-            #if len(l) == 4:
-                #self.server_port = int(l[2])
-                #self.server_ip = addr[0]
-                #if l[3] == 'SERVER':
-                    #self.mode = 'client'
-                #elif l[3] == 'CLIENT':
-                    #self.mode = 'server'
-                #else:
-                    #s.close()
-                    #return False
-
-                #s.close()
-                #return True
+            return True
 
         except:
             logger.debug('no feedback')
