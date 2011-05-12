@@ -190,14 +190,15 @@ class BaseDTNDevice(threading.Thread):
         """docstring for handle_bcast_listen"""
         logger.debug('Recv bcast')
 
-        msg , addr = s.recvfrom(65535)
+        msg, addr = s.recvfrom(65535)
 
-        s.sendto('%d\n' % self.dtn_port)
+        logger.debug(msg+addr)
+        #s.sendto('%d' % self.dtn_port)
 
     def bcast(self, bcast_port):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        s.sendto('aaa', ('<broadcast>', bcast_port))
+        s.sendto(BCAST_MSG, ('<broadcast>', bcast_port))
 
         s.settimeout(2)
 
