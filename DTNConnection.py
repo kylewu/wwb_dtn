@@ -27,8 +27,8 @@ class DTNConnection(threading.Thread):
         self.sm = sm
         self.cb = cb
 
+        
         self.target = target
-        self.target_other = ''
 
         # Flags
         self.stop_flag = False
@@ -195,6 +195,7 @@ class DTNConnection(threading.Thread):
             time.sleep(5)
 
     def run(self):
+        return
         self.send_thread = threading.Thread(target=self._send_thread)
         self.recv_thread = threading.Thread(target=self._recv_thread)
         self.daemon_thread = threading.Thread(target=self._daemon_thread)

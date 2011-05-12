@@ -17,7 +17,8 @@ from DTN import logger
 from DTNDatabase import DTNDatabase
 #from DTNConnection import DTNCarrier
 from DTNConnection import DTNConnection
-import DTNMsgHandler
+#import DTNMsgHandler
+from DTNMessage import DTNMessage
 
 """
     Class inheritance
@@ -40,6 +41,11 @@ import DTNMsgHandler
 
 MOBILE_SH_INFO = 'mobile'
 SERVER_SH_INFO = 'server'
+
+EXIST_ERR = 'Already Exist'
+SUCCESS_INFO = 'Success'
+
+BCAST_MSG = 'FINDING'
 
 class BaseDTNDevice(threading.Thread):
     def __init__(self, **kwargs):
@@ -156,9 +162,11 @@ class BaseDTNDevice(threading.Thread):
         # update f_map and readers
         f_map = self.get_handle_map()
         readers = self.get_sockets(f_map)
+        print len(readers)
 
+        print readers
         try:
-            ready_to_read, ready_to_write, in_error = select.select(readers, [], [], 30)
+            ready_to_read, ready_to_write, in_error = select.select(readers, [], [], 3)
         except socket.timeout:
             return
         except:
@@ -166,6 +174,7 @@ class BaseDTNDevice(threading.Thread):
             return
 
         for r in ready_to_read:
+            print 'abc'
             for s in f_map:
                 if isinstance(s[0], socket.socket):
                     if r == s[0]:
@@ -176,46 +185,84 @@ class BaseDTNDevice(threading.Thread):
                         s[1](r)
                         break
 
+
+    def handle_bcast_listen(self, s):
+        """docstring for handle_bcast_listen"""
+        logger.debug('Recv bcast')
+
+        msg , addr = s.recvfrom(65535)
+
+        s.sendto('%d\n' % self.dtn_port)
+
+    def bcast(self, bcast_port):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        s.sendto('aaa', ('<broadcast>', bcast_port))
+
+        s.settimeout(2)
+
+        try:
+            (buf, addr) = s.recvfrom(2048)
+            logger.info('Received from %s: %s' % (addr, buf))
+
+            #l = buf.split()
+            #if len(l) == 4:
+                #self.server_port = int(l[2])
+                #self.server_ip = addr[0]
+                #if l[3] == 'SERVER':
+                    #self.mode = 'client'
+                #elif l[3] == 'CLIENT':
+                    #self.mode = 'server'
+                #else:
+                    #s.close()
+                    #return False
+
+                #s.close()
+                #return True
+
+        except:
+            logger.debug('no feedback')
+
+        s.close()
+        return False
+
     def handle_dtn_listen(self, s):
-        logger.debug('try to build new DTNConnection')
 
-        conn, remote = s.accept()
+        logger.info('DTN connection request')
+        conn_recv, remote = s.accept()
 
-        meta = conn.recv(65535)
-        port = int(meta.split()[0])
-        sh = meta.split()[1]
+        data = conn_recv.recv(1024)
+        port = int(data.split()[0])
+        sh = data.split()[1]
+        tar = ' '.join(data.split()[2:])
+        logger.debug('Port: %d, SH: %s, Target: %s' % (port, sh, tar))
+
+        if self.dtn.has_key(sh):
+            conn_recv.send(EXIST_ERR)
+            logger.debug('DTN connection already exists between these two Site Managers')
+            return
+        else:
+            conn_recv.send(SUCCESS_INFO)
 
         # remote[0] is IP
         # remote[1] is PORT
         conn_send = DTN._tcp_connect(remote[0], port)
 
         if conn_send is not None:
-            conn_send.send(self.sh)
+            # send my SH info
+            conn_send.send('%s %s' % (self.sh, self.target))
 
-            dtn_conn = DTNConnection(conn_send, conn, self.target, self.sh, self)
+            # Ready
+
+            dtn_conn = DTNConnection(conn_send, conn_recv, tar, self.sh, self)
             self.dtn[sh] = dtn_conn
             dtn_conn.start()
-        else:
-            conn.send('error')
+            logger.info('New DTN connection established')
 
-    def handle_bcast_listen(self, s):
-        """docstring for handle_bcast_listen"""
-
-        msg , addr = s.recvfrom(65535)
-
-        if self.mode == 'CLIENT_SM' and self.client.conn is not None:
-            return
-    
-        if msg == CARRIER_PING:
-
-            logger.debug('recv broadcast %s from %s' % (msg, addr))
-
-            s.sendto(CARRIER_PONG + '%s %s' % (self.dtn_port, self.mode), (addr[0], addr[1]))
-
-    # TODO
     def connect_to_sm(self, ip, port):
         """ connect to specific IP:PORT
         """
+        logger.info('Try to connect to Site Manager and establish DTN connection')
         # Generate a random port for listening
         random_n = 1
         while True:
@@ -226,21 +273,40 @@ class BaseDTNDevice(threading.Thread):
                 continue
 
             break
-        conn = None
-        conn = DTN._tcp_connect(ip, port)
+        conn_send = DTN._tcp_connect(ip, port)
 
-        if conn is not None:
+        if conn_send is not None:
 
             # send port information
-            conn.send('%d %s\n' % (self.dtn_port + random_n, self.sh))
+            conn_send.send('%d %s %s\n' % (self.dtn_port + random_n, self.sh, self.target))
+
+            data = conn_send.recv(1024) 
+            if data == EXIST_ERR:
+                logger.debug('DTN connection already exists between these two Site Managers')
+                return False
+            else:
+                logger.debug('Successed in sending port, sh and target info')
 
             # wait for connection
-            conn_recv, remote = listener.accept()
-            sh = conn_recv.recv(1024)
+            listener.settimeout(5)
+            try:
+                conn_recv, remote = listener.accept()
+            except socket.timeout:
+                logger.debug('timeout')
+                return False
 
-            dtn_conn = DTNConnection(conn, conn_recv, self.target, self.sh, self)
+            # Get SH info
+            data = conn_recv.recv(1024)
+            sh = data.split()[0]
+            tar = ' '.join(data.split()[1:])
+            logger.debug('SH: %s, Target: %s' % (sh, tar))
+            
+            # Ready
+
+            dtn_conn = DTNConnection(conn_send, conn_recv, tar, self.sh, self)
             self.dtn[sh] = dtn_conn
             dtn_conn.start()
+            logger.info('New DTN connection established')
 
             DTN._cleanup_socket(listener)
             return True
@@ -316,12 +382,12 @@ class BaseDTNSiteManager(BaseDTNDevice):
             sys.exit(1)
         else:
             logger.debug(chunk)
-            msg = DTNMsgHandler.handle(chunk)
-            if msg is not None:
+            msg = DTNMessage(chunk)
+            if msg.re_type == 'PING_RAW':
                 # Notify Monitors
                 self.notify_monitors(chunk)
                 # Save into database
-                self.db.insert_tuple(msg[1:])
+                self.db.insert_msg(msg)
     
     def notify_monitors(self, msg):
         """ Notify Monitors when receiving a message """
@@ -357,72 +423,72 @@ class MobileSiteManager(BaseDTNDevice):
         self.sh = MOBILE_SH_INFO
         #self.dtn = DTNConnection(bbbbbbbbbbb)
 
-CARRIER_PING = "I'M CARRIER"
-CARRIER_PONG = "DTN PORT "
-class SiteManagerCarrier():
+#CARRIER_PING = "I'M CARRIER"
+#CARRIER_PONG = "DTN PORT "
+#class SiteManagerCarrier():
 
-    def __init__(self):
+    #def __init__(self):
 
-        self.server_ip = ''
-        self.server_port = 0
+        #self.server_ip = ''
+        #self.server_port = 0
 
-        self.db = DTNDatabase(self.name)
+        #self.db = DTNDatabase(self.name)
 
-        self.carrier = DTNCarrier(self)
+        #self.carrier = DTNCarrier(self)
 
-        signal.signal(signal.SIGINT, self.sighandler)
+        #signal.signal(signal.SIGINT, self.sighandler)
         
-    def sighandler(self, signum, frame):
-        self.stop()
+    #def sighandler(self, signum, frame):
+        #self.stop()
 
-    def bcast(self, bcast_port):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        s.sendto(CARRIER_PING, ('<broadcast>', bcast_port))
+    #def bcast(self, bcast_port):
+        #s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        #s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        #s.sendto(CARRIER_PING, ('<broadcast>', bcast_port))
 
-        s.settimeout(2)
+        #s.settimeout(2)
 
-        try:
-            (buf, addr) = s.recvfrom(2048)
-            print "Received from %s: %s" % (addr, buf)
-            l = buf.split()
-            if len(l) == 4:
-                self.server_port = int(l[2])
-                self.server_ip = addr[0]
-                if l[3] == 'SERVER':
-                    self.mode = 'client'
-                elif l[3] == 'CLIENT':
-                    self.mode = 'server'
-                else:
-                    s.close()
-                    return False
+        #try:
+            #(buf, addr) = s.recvfrom(2048)
+            #print "Received from %s: %s" % (addr, buf)
+            #l = buf.split()
+            #if len(l) == 4:
+                #self.server_port = int(l[2])
+                #self.server_ip = addr[0]
+                #if l[3] == 'SERVER':
+                    #self.mode = 'client'
+                #elif l[3] == 'CLIENT':
+                    #self.mode = 'server'
+                #else:
+                    #s.close()
+                    #return False
 
-                s.close()
-                return True
+                #s.close()
+                #return True
 
-        except:
-            print 'no feedback'
-            s.close()
+        #except:
+            #print 'no feedback'
+            #s.close()
 
-        return False
+        #return False
 
-    def connect_to_server(self):
-        # try to connect to server
-        conn = None
-        conn = DTN._tcp_connect(self.server_ip, self.server_port)
+    #def connect_to_server(self):
+        ## try to connect to server
+        #conn = None
+        #conn = DTN._tcp_connect(self.server_ip, self.server_port)
 
-        if conn is not None:
-            if self.carrier is not None:
-                self.carrier = None
-            self.carrier = DTNCarrier(self)
-            self.carrier.conn = conn
-            self.carrier.mode = self.mode
-            return True
+        #if conn is not None:
+            #if self.carrier is not None:
+                #self.carrier = None
+            #self.carrier = DTNCarrier(self)
+            #self.carrier.conn = conn
+            #self.carrier.mode = self.mode
+            #return True
         
-        return False
+        #return False
 
-    def start(self):
-        self.carrier.start()
+    #def start(self):
+        #self.carrier.start()
 
-    def stop(self):
-        self.carrier.stop()
+    #def stop(self):
+        #self.carrier.stop()

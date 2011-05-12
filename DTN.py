@@ -111,6 +111,7 @@ def _udp_open(ip, port):
     return s
 
 def _broadcast_listen(port):
+    logger.debug('bcast port %d' % port)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)

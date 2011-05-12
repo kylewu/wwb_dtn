@@ -13,17 +13,23 @@ import re
 # TIMESTAMP used in VClient is time.tv_sec*1000 + time.tv_usec/1000
 # In python, we can get this by using int(time.time()*1000)
 
+PING_RAW = 'PING_RAW'
+PING = 'PING'
+ACK = 'ACK'
+CMD_RAW = 'CMD_RAW'
+CMD = 'CMD'
+
 # -----------------------------------------------------
 # PING msg from VClient
-PING_SEND_re = re.compile("(?P<time>\d+) (?P<ip>[\d+\.]+):(?P<port>\d+) PING (?P<src>[^ ]*) {(?P<attributes>[^}]+)}.*")
+PING_RAW_re = re.compile("(?P<time>\d+) (?P<ip>[\d+\.]+):(?P<port>\d+) PING (?P<src>[^ ]*) {(?P<attributes>[^}]+)}.*")
 # PING msg in WSN
-PING_RECV_re = re.compile("(?P<hash>[a-z0-9]+) (?P<time>\d+) (?P<ip>[\d+\.]+) (?P<port>\d+) (?P<src>[^ ]*) (?P<dst>[^ ]*) PING {(?P<attributes>[^}]+)}.*")
+PING_re = re.compile("(?P<hash>[a-z0-9]+) (?P<time>\d+) (?P<ip>[\d+\.]+) (?P<port>\d+) (?P<src>[^ ]*) (?P<dst>[^ ]*) PING {(?P<attributes>[^}]+)}.*")
 # ACK msg in WSN
 ACK_re = re.compile("(?P<type>[A-Z]+) (?P<hash>[^ ]+)")
 # CMD msg from Monitor
-CMD_SEND_re = re.compile('(?P<time>\d+) (?P<dst>[^ ]*) CMD {(?P<cmd>[^}]+)}.*')
+CMD_RAW_re = re.compile('(?P<time>\d+) (?P<dst>[^ ]*) CMD {(?P<cmd>[^}]+)}.*')
 # CMD msg in WSN
-CMD_RECV_re = re.compile("(?P<hash>[a-z0-9]+) (?P<time>\d+) SERVER PORT SERVER (?P<dst>[^ ]*) CMD {(?P<cmd>[^}]+)}.*")
+CMD_re = re.compile("(?P<hash>[a-z0-9]+) (?P<time>\d+) SERVER PORT SERVER (?P<dst>[^ ]*) CMD {(?P<cmd>[^}]+)}.*")
 # -----------------------------------------------------
 
 class DTNMessage():
@@ -63,8 +69,9 @@ class DTNMessage():
 
     # TODO
     def to_msg(self):
-        if self.re_type == 'PING_SEND':
-            return self.msg+'\n'
+        if self.re_type == PING_RAW:
+            return '%s %d %s %s %s %s %s %s' \
+                    % (self.hash, self.time, self.ip, self.port, self.src, self.dst, self.type, self.data)
 
 
     ###########
@@ -72,11 +79,11 @@ class DTNMessage():
     ###########
     def handle(self, msg):
 
-        m = PING_SEND_re.match(msg)
+        m = PING_RAW_re.match(msg)
         if m is not None:
-            self.re_type = 'PING_SEND'
+            self.re_type = PING_RAW 
             self.hash = self.get_hash(msg)
-            self.time = m.group('time')
+            self.time = int(m.group('time'))
             self.ip =  m.group('ip')
             self.port = m.group('port')
             self.src = m.group('src')
@@ -85,9 +92,9 @@ class DTNMessage():
             self.data = '{%s}' % m.group('attributes')
             return
 
-        m = CMD_SEND_re.match(msg)
+        m = CMD_RAW_re.match(msg)
         if m is not None:
-            self.re_type = 'CMD_SEND'
+            self.re_type = CMD_RAW
             self.hash = self.get_hash(msg)
             self.time = m.group('time')
             self.ip = 'SERVER'
@@ -100,12 +107,12 @@ class DTNMessage():
 
         m = ACK_re.match(msg)
         if m is not None:
-            self.re_type = 'ACK'
+            self.re_type = ACK
             self.hash = m.group('hash')
 
-        m = PING_RECV_re.match(msg)
+        m = PING_re.match(msg)
         if m is not None:
-            self.re_type = 'PING_RECV'
+            self.re_type = PING
             self.hash = m.group('hash')
             self.sent = -1
             self.time = m.group('time')
@@ -117,7 +124,7 @@ class DTNMessage():
             self.data = '{%s}' % m.group('attributes')
 
         # TODO
-        m = CMD_RECV_re.match(msg)
+        m = CMD_re.match(msg)
         if m is not None:
             (None, m.group('hash'), -1, 0, m.group('time'), 'SERVER', 'PORT', 'SERVER', m.group('dst'), 'CMD', '{%s}' % m.group('cmd'))
             return 'CMD_RECV', m.group('cmd')

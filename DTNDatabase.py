@@ -25,7 +25,7 @@ class DTNDatabase():
         conn = sqlite3.connect(self.db_name, check_same_thread = False)
         c = conn.cursor()
         c.executescript('''
-            create table data (id integer primary key, hash text, sent integer, ack integer, time text, ip text, port
+            create table data (id integer primary key, hash text, sent integer, ack integer, time interger, ip text, port
             text, src text, dst text, type text, data text);
             ''')
 
@@ -36,11 +36,11 @@ class DTNDatabase():
         conn.close()
 
     # FIXME old
-    def insert_tuple(self, t):
-        conn = sqlite3.connect(self.db_name)
-        conn.execute('insert into data values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', t)
-        conn.commit()
-        conn.close()
+    #def insert_tuple(self, t):
+        #conn = sqlite3.connect(self.db_name)
+        #conn.execute('insert into data values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', t)
+        #conn.commit()
+        #conn.close()
 
     def update(self, set, where):
         conn = sqlite3.connect(self.db_name)
