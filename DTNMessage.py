@@ -90,12 +90,12 @@ class DTNMessage():
 
     def _to_msg(self):
         """ Message without hash """
-        return '%d %s %s %s %s %s %s' \
+        return '%d %s %s %s %s %s {%s}' \
                 % (self.time, self.ip, self.port, self.src, self.dst, self.type, self.data)
 
     def to_msg(self):
         """ Message with hash """
-        return '%s %d %s %s %s %s %s %s' \
+        return '%s %d %s %s %s %s %s {%s}' \
                 % (self.hash, self.time, self.ip, self.port, self.src, self.dst, self.type, self.data)
 
     ###########
@@ -109,7 +109,7 @@ class DTNMessage():
             #self.re_type = ACK
             self.type = ACK
             self.hash = m.group('hash')
-            return
+            return True
 
         m = PING_RAW_re.match(msg)
         if m is not None:
@@ -121,9 +121,9 @@ class DTNMessage():
             self.src = m.group('src')
             self.dst = 'SERVER'
             self.type = 'PING'
-            self.data = '{%s}' % m.group('data')
+            self.data = m.group('data')
             self.hash = self.get_hash()
-            return
+            return True
 
         m = CMD_RAW_re.match(msg)
         if m is not None:
@@ -134,9 +134,9 @@ class DTNMessage():
             self.src = 'SERVER'
             self.dst = m.group('dst')
             self.type = 'CMD'
-            self.data = '{%s}' % m.group('cmd')
+            self.data = m.group('cmd')
             self.hash = self.get_hash()
-            return
+            return True
 
         m = MSG_re.match(msg)
         if m is not None:
@@ -150,8 +150,8 @@ class DTNMessage():
             self.src = m.group('src')
             self.dst = m.group('dst')
             self.type = m.group('type')
-            self.data = '{%s}' % m.group('data')
-            return
+            self.data = m.group('data')
+            return True
 
         # TODO remove the following
         #m = PING_re.match(msg)
@@ -197,4 +197,4 @@ class DTNMessage():
             #self.data = '{%s}' % m.group('data')
             #return
 
-        return 
+        return False

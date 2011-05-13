@@ -31,8 +31,13 @@ class DTNDatabase():
 
     def insert_msg(self, m):
         """ Insert DTNMessage """
+
+        INSERT_S = 'insert into data (id, hash, sent, ack, time, ip, port, src, dst, type, data) SELECT ?, ?, ?, ?, ?,\
+        ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM data WHERE hash = ?);'
         conn = sqlite3.connect(self.db_name)
-        conn.execute('insert into data values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', m.to_tuple())
+
+        #conn.execute('insert into data values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', m.to_tuple())
+        conn.execute(INSERT_S, tuple(list(m.to_tuple())+[m.hash]))
         conn.commit()
         conn.close()
 

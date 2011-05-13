@@ -10,17 +10,21 @@ import sys
 import time
 
 from DTNDatabase import DTNDatabase
+from DTNMessage import DTNMessage
 
 # dtncmd HOST NODE {CMD}
 
 if len(sys.argv) < 3:
     sys.exit()
 t = str(int(time.time()))
+
 msg = '%s %s CMD %s' % (t, sys.argv[1], ' '.join(sys.argv[3:]))
+m = DTNMessage(msg)
+# TODO set message ip and port if possible
 
 db = DTNDatabase('ServerSiteManager')
-db.insert(msg)
-print 'OK'
+db.insert_msg(m)
 
+print 'OK'
 #for msg in db.select_all():
     #print msg
