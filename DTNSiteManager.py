@@ -15,9 +15,7 @@ import signal
 import DTN
 from DTN import logger
 from DTNDatabase import DTNDatabase
-#from DTNConnection import DTNCarrier
 from DTNConnection import DTNConnection
-#import DTNMsgHandler
 from DTNMessage import DTNMessage
 
 """
@@ -355,6 +353,7 @@ class BaseDTNSiteManager(BaseDTNDevice):
         self.monitor_listen = DTN._tcp_listen(self.my_ip, self.monitor_port)
         self.vclient_listen = DTN._udp_open(self.my_ip, self.vclient_port)
 
+    # FIXME this function is not useful, but I would like keep it
     def handle_vclient_sockets(self, r):
         """docstring for handle_vclient_sockets"""
         chunk = r.recv(1024)
@@ -388,10 +387,11 @@ class BaseDTNSiteManager(BaseDTNDevice):
             print "UDP error", s
             sys.exit(1)
         else:
-            logger.debug(chunk)
+            logger.debug('recv from vclient' + chunk)
             msg = DTNMessage()
             msg.handle(chunk)
-            if msg.re_type == 'PING_RAW':
+            #if msg.re_type == 'PING_RAW':
+            if msg.type == 'PING':
                 # Notify Monitors
                 self.notify_monitors(chunk)
                 # Save into database

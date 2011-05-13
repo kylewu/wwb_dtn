@@ -9,6 +9,9 @@ import os
 import sqlite3
 from DTNMessage import DTNMessage
 
+CREATE_EXE = 'create table data (id integer primary key, hash text, sent integer, ack integer, time interger, ip text,\
+                port text, src text, dst text, type text, data text);'
+
 class DTNDatabase():
 
     def __init__(self, name = 'DTN'):
@@ -24,10 +27,7 @@ class DTNDatabase():
     def _create_db(self):
         conn = sqlite3.connect(self.db_name, check_same_thread = False)
         c = conn.cursor()
-        c.executescript('''
-            create table data (id integer primary key, hash text, sent integer, ack integer, time interger, ip text, port
-            text, src text, dst text, type text, data text);
-            ''')
+        c.executescript(CREATE_EXE) 
 
     def insert_msg(self, m):
         """ Insert DTNMessage """
@@ -58,6 +58,13 @@ class DTNDatabase():
 
         conn.close()
         return res
+
+    def get_key_by_hash(self, hash):
+        cla = 'select id from data where hash={0}'.format(hash)
+        msgs = self.execute(cla)
+        if len(msgs) == 1:
+            return msgs[0][0]
+        return -1
 
     def execute(self, s):
         """ A function for handling common script

@@ -38,9 +38,12 @@ class DTNConnection(threading.Thread):
         # * or list of ids
         self.target = target
 
+        self.msgs = list()
+
         # Flags
         self.stop_flag = False
         self.keep_alive = False
+        self.recv_stop = False
 
         self.buf = ''
         
@@ -65,43 +68,56 @@ class DTNConnection(threading.Thread):
         self.sm.dtn[self.sh] = None
 
     def _get_all(self):
+        add_where = ''
+
+        # Start from last point
+        if self.sm.last_hash[self.sh] != '':
+            last_key = self.sm.db.get_key(self.sm.last_hash[self.sh])
+            if last_key != -1:
+                add_where += 'and id>%d' % last_key
+
         if self.target == '*':
+            
             # FIXME
-            return self.sm.db.select_msg('dst!=\'%s\'' % self.my_sh)
+            return self.sm.db.select_msg("dst!='%s' and ack!=1 %s" % (self.my_sh, add_where))
         else:
             ids = self.target.split()
             res = list()
             for id in ids:
                 # FIXME
-                res += self.sm.db.select_msg('dst!=\'%s\' and dst == \'%s\'' % (self.my_sh, id))
+                res += self.sm.db.select_msg("dst!='%s' and dst == '%s' %s" % (self.my_sh, id, add_where))
             return res
 
     # FIXME old, no need any more
     def _update_sent(self, id):
         return self.sm.db.update('sent=1', 'hash={0}'.format(id) )
 
-    def _send_data(self, conn, data):
+    def _send(self, conn, data):
         conn.send(data + '\n')
-
-    def _send(self, msg):
+ 
+    def _send_msg(self, msg):
+        """ Send DTNMessage """
 
         try:
             data = msg.to_msg()
+            self._send(self.conn_send, data)
 
-            self._send_data(self.conn_send, data)
+            logger.debug("send %s : %s" % (msg.type, data))
 
-            logger.debug("send %s" % data)
-
+            # Waiting ACK
             res = self.conn_send.recv(1024)
-
             if res == 'ACK %s\n' % msg.hash:
+                logger.debug('recv ACK')
                 # update last hash
                 self.sm.last_hash[self.sh] = msg.hash
-                #FIXME
-                #self._update_sent(msg[0])
                 return True
-            elif res == 'ERROR':
-                return False
+
+            else:
+                logger.debug('no ACK, try to send again')
+                # Error, try to send again
+                time.sleep(TIMEOUT)
+                return self._send_msg(msg)
+
         except socket.error:
             logger.warn("send_thread connection lost")
             return False
@@ -120,11 +136,13 @@ class DTNConnection(threading.Thread):
                 break
 
             # msg is instance of DTNMessage
-            msgs = self._get_all()
-            #logger.debug('LEN: %d' % len(msgs))
+            self.msgs.extend(self._get_all())
+            
+            logger.debug('Total %d messages to send' % len(self.msgs))
             res = True
-            for msg in msgs:
-                res = self._send(msg)
+            while len(self.msgs) > 0:
+                msg = self.msgs.pop(0)
+                res = self._send_msg(msg)
                 if not res:
                     self.stop_flag = True
                     break
@@ -133,7 +151,7 @@ class DTNConnection(threading.Thread):
                 break
 
             if not self.keep_alive:
-                self._send_data(self.conn_send, SEND_DONE) 
+                self._send(self.conn_send, SEND_DONE) 
                 break
 
             time.sleep(TIMEOUT)
@@ -146,33 +164,47 @@ class DTNConnection(threading.Thread):
 
         self.sm.db.insert_msg(dtn_msg)
 
-        logger.debug('recv ' + dtn_msg.re_type)
+        #logger.debug('recv %s : %s' % (dtn_msg.re_type, msg))
+        logger.debug('recv %s : %s' % (dtn_msg.type, msg))
 
-        if dtn_msg.re_type != 'ACK':
-            self._send_data(self.conn_recv, 'ACK ' + dtn_msg.hash)
+        #if dtn_msg.re_type != 'ACK':
+        # Any messages but ACK should send ACK
+        if dtn_msg.type != 'ACK':
+            logger.debug('send ACK')
+            self._send(self.conn_recv, 'ACK ' + dtn_msg.hash)
 
-        # FIXME
+        # Message reaches destination
         if dtn_msg.dst == self.my_sh:
             dst_msg = DTNMessage()
             dst_msg.time = int(time.time()*1000)
+            dst_msg.ack = 1
             dst_msg.ip = self.sm.my_ip
             dst_msg.port = self.sm.dtn_port
             dst_msg.dst = dtn_msg.src
             dst_msg.src = self.my_sh
+            dst_msg.type = 'DST_ACK'
             dst_msg.data = dtn_msg.hash
-            dst_msg.new_hash()
+            dst_msg.hash = dst_msg.get_hash()
 
             self.sm.db.insert_msg(dst_msg)
 
-            self._send(dst_msg)
+            self.msgs.insert(0, dst_msg)
+            #res = self._send_msg(dst_msg)
+            #if not res:
+                #print 'WHY'
+            
+            if dtn_msg.type == 'DST_ACK':
+                # set the match data ack=1
+                self.sm.db.update('ack=1', 'hash=%s'%dtn_msg.data)
 
-        if dtn_msg.re_type == 'CMD' and self.my_sh == dtn_msg.dst:
-            cmd = dtn_msg.data
-            # TODO check this
-            logger.debug('recv CMD : %s', cmd)
-            import commands
-            res = commands.getstatusoutput(cmd)
-            logger.debug(res)
+            elif dtn_msg.type == 'CMD':
+
+                cmd = dtn_msg.data
+                # TODO check this
+                logger.debug('recv CMD : %s', cmd)
+                import commands
+                res = commands.getstatusoutput(cmd)
+                logger.debug(res)
 
         return True
 
@@ -188,17 +220,14 @@ class DTNConnection(threading.Thread):
                 logger.warn('No Connection')
                 break
 
-            is_finish = False
             try:
                 self.buf += self.conn_recv.recv(65535)
 
                 while self.buf.find('\n') >= 0:
                     msg, self.buf = self.buf.split('\n', 1)
 
-                    logger.debug(msg)
-
                     if msg == SEND_DONE:
-                        is_finish = True
+                        self.recv_stop = True
                         break
 
                     self._recv_handle(msg)
@@ -212,8 +241,8 @@ class DTNConnection(threading.Thread):
                 self.stop_flag = True
                 break
 
-            if is_finish:
-                break
+            #if is_finish:
+                #break
 
             #time.sleep(TIMEOUT)
 
@@ -221,7 +250,7 @@ class DTNConnection(threading.Thread):
 
     def _daemon_thread(self):
         while True:
-            if not self.send_thread.isAlive() and not self.recv_thread.isAlive():
+            if not self.send_thread.isAlive() and self.recv_stop:#not self.recv_thread.isAlive():
                 if self.stop_flag:
                     logger.error('Error happended or stop by user')
                 else:
