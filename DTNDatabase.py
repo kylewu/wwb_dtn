@@ -7,7 +7,7 @@ __version__ = '0.3'
 
 import os
 import sqlite3
-import hashlib
+from DTNMessage import DTNMessage
 
 class DTNDatabase():
 
@@ -30,17 +30,44 @@ class DTNDatabase():
             ''')
 
     def insert_msg(self, m):
+        """ Insert DTNMessage """
         conn = sqlite3.connect(self.db_name)
         conn.execute('insert into data values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', m.to_tuple())
         conn.commit()
         conn.close()
 
-    # FIXME old
-    #def insert_tuple(self, t):
-        #conn = sqlite3.connect(self.db_name)
-        #conn.execute('insert into data values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', t)
-        #conn.commit()
-        #conn.close()
+    def select_msg(self, where):
+        """ Return a list of DTNMessage
+        """
+        conn = sqlite3.connect(self.db_name)
+        cur = conn.execute('select hash, time, ip, port, src, dst, type, data from data where {0}'.format(where))
+        msgs = cur.fetchall()
+        res = list()
+        for msg in msgs:
+            m = DTNMessage()
+            m.hash = msg[0]
+            m.time = msg[1]
+            m.ip = msg[2]
+            m.port = msg[3]
+            m.src = msg[4]
+            m.dst = msg[5]
+            m.type = msg[6]
+            m.data = msg[7]
+
+            res.append(m)
+
+        conn.close()
+        return res
+
+    def execute(self, s):
+        """ A function for handling common script
+        """
+        conn = sqlite3.connect(self.db_name)
+        cur = conn.execute(s)
+        msgs = cur.fetchall()
+        conn.commit()
+        conn.close()
+        return msgs
 
     def update(self, set, where):
         conn = sqlite3.connect(self.db_name)
@@ -50,6 +77,7 @@ class DTNDatabase():
         conn.close()
         return True
 
+    # FIXME old
     def update_ack(self, h):
         conn = sqlite3.connect(self.db_name)
         t = (h,)
@@ -57,6 +85,7 @@ class DTNDatabase():
         conn.commit()
         conn.close()
 
+    # FOR TEST
     def select_all(self, where=None):
         if where is None:
             cla = 'select hash, time, ip, port, src, dst, type, data from data where sent = 0'
@@ -73,34 +102,3 @@ class DTNDatabase():
         msgs = cur.fetchall()
         conn.close()
         return msgs
-
-    
-    def execute(self, s):
-        """ A function for handling common script
-            Only for test
-        """
-        conn = sqlite3.connect(self.db_name)
-        cur = conn.execute(s)
-        msgs = cur.fetchall()
-        conn.commit()
-        conn.close()
-        return msgs
-
-    def hash(self, msg):
-        m = hashlib.md5()
-        m.update(msg)
-        return m.digest().encode('hex')
-
-if __name__ == '__main__':
-    ##### TODO #####
-    ##### OLD TEST #####
-    db = DTNDatabase('test')
-    data = '2cc2f40e95db75de9d403449f9833e43 1300803228892 130.238.8.154 7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUS WL-500GP;type=>sensorhost;}'
-    #data = '1299676566479 130.238.8.154:7000 PING 001E8C6C9172 {position=>wgs84,17.647102456850032,59.83816340033785,62.99983961507678;platform=>ASUSWL-500GP;type=>sensorhost;}'
-    db.insert(data)
-    db.update_ack('2cc2f40e95db75de9d403449f9833e43')
-
-    for msg in db.select_all():
-        print msg
-
-    print db.execute("select * from data where sent = -1 and type='PING'")

@@ -25,20 +25,24 @@ PING_RAW_re = re.compile("(?P<time>\d+) (?P<ip>[\d+\.]+):(?P<port>\d+) PING (?P<
 # PING msg in WSN
 PING_re = re.compile("(?P<hash>[a-z0-9]+) (?P<time>\d+) (?P<ip>[\d+\.]+) (?P<port>\d+) (?P<src>[^ ]*) (?P<dst>[^ ]*) PING {(?P<attributes>[^}]+)}.*")
 # ACK msg in WSN
-ACK_re = re.compile("(?P<type>[A-Z]+) (?P<hash>[^ ]+)")
+ACK_re = re.compile("ACK (?P<hash>[^ ]+)")
 # CMD msg from Monitor
 CMD_RAW_re = re.compile('(?P<time>\d+) (?P<dst>[^ ]*) CMD {(?P<cmd>[^}]+)}.*')
 # CMD msg in WSN
 CMD_re = re.compile("(?P<hash>[a-z0-9]+) (?P<time>\d+) SERVER PORT SERVER (?P<dst>[^ ]*) CMD {(?P<cmd>[^}]+)}.*")
+# Reach DST
+DST_re = re.compile("DST (?P<hash>[^ ]+)")
+
+
 # -----------------------------------------------------
 
 class DTNMessage():
-    def __init__(self, msg):
+    def __init__(self):
         # return value / re type
         self.re_type = None
 
         # keep a image of message
-        self.msg = msg
+        self.msg = ''
 
         # DB attributes
         self.hash = ''
@@ -56,13 +60,19 @@ class DTNMessage():
         self.data = ''
 
         # get attributes from message
-        self.handle(msg)
+        #self.handle(msg)
 
     # FIXME not sure this function should be here
     def get_hash(self, msg):
         m = hashlib.md5()
         m.update(msg)
         return m.digest().encode('hex')
+
+    def new_hash(self, msg):
+        m = hashlib.md5()
+        m.update('%d %s %s %s %s %s %s' \
+                    % (self.time, self.ip, self.port, self.src, self.dst, self.type, self.data))
+        self.hash = m.digest().encode('hex')
 
     def to_tuple(self):
         return None, self.hash, self.sent, self.ack, self.time, self.ip, self.port, self.src, self.dst, self.type, self.data 
@@ -72,12 +82,16 @@ class DTNMessage():
         if self.re_type == PING_RAW:
             return '%s %d %s %s %s %s %s %s' \
                     % (self.hash, self.time, self.ip, self.port, self.src, self.dst, self.type, self.data)
+        return '%s %d %s %s %s %s %s %s' \
+                % (self.hash, self.time, self.ip, self.port, self.src, self.dst, self.type, self.data)
+
 
 
     ###########
     # HASH, SENT, ACK, TIME, IP, PORT, SRC, DST, TYPE, ATTR
     ###########
     def handle(self, msg):
+        self.msg = msg
 
         m = PING_RAW_re.match(msg)
         if m is not None:
