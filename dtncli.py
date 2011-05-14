@@ -10,13 +10,19 @@ from DTNSiteManager import MobileSiteManager
 
 HELP = 'c : connect\nb : broadcast\nk : stop\ns : start\nq : quit'
 
-ip = '130.243.144.12'
+#ip = '130.243.144.12'
+ip='130.238.8.164'
 
 mobile = None
 while True:
     c = raw_input('Input cmd:')
+
     if c == 'c':
-        print 'connect'
+        if mobile is not None:
+            print 'connect'
+            ip = raw_input('  IP:')
+            p = raw_input('  Port:')
+            mobile.connect_to_sm(ip, int(p))
     elif c == 'b':
         if mobile is not None:
             print 'braodcast'
@@ -36,5 +42,6 @@ while True:
             mobile.start()
     elif c == 'q':
         print 'quit'
+        break
     else:
         print HELP
