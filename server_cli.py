@@ -6,42 +6,42 @@ __credits__ = 'Python best'
 __date__    = 'Sat May 14 10:48:06 2011'
 __version__ = '0.1'
 
-from DTNSiteManager import MobileSiteManager
+from DTNSiteManager import ServerSiteManager
 
 HELP = 'c : connect\nb : broadcast\nk : stop\ns : start\nq : quit'
 
+#home
 #ip = '130.243.144.12'
-ip='130.238.8.164'
+#uu
+ip = '130.238.8.164'
 
-mobile = None
+dtn = None
 while True:
     c = raw_input('Input cmd:')
-
     if c == 'c':
-        if mobile is not None:
+        if dtn is not None:
             print 'connect'
-            ip = raw_input('  IP:')
+            i = raw_input('  Ip:')
             p = raw_input('  Port:')
-            mobile.connect_to_sm(ip, int(p))
+            dtn.connect_to_sm(i,int(p))
     elif c == 'b':
-        if mobile is not None:
+        if dtn is not None:
             print 'braodcast'
             p = raw_input('  Port:')
-            print mobile.bcast(int(p))
+            print dtn.bcast(int(p))
         else:
-            print 'please start mobile first'
+            print 'please start dtn first'
     elif c == 'k':
-        if mobile is not None:
+        if dtn is not None:
             print 'stop'
-            mobile.stop()
-            mobile = None
+            dtn.stop()
+            dtn = None
     elif c == 's':
-        if mobile is None:
+        if dtn is None:
             print 'start'
-            mobile = MobileSiteManager(dtn_port=25555, bcast_port=26666, ip=ip)
-            mobile.start()
+            dtn = ServerSiteManager(dtn_port=5555, bcast_port=6666, monitor_port=7777,vclient_port = 4444, ip=ip)
+            dtn.start()
     elif c == 'q':
         print 'quit'
-        break
     else:
         print HELP

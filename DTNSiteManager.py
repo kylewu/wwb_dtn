@@ -116,8 +116,9 @@ class BaseDTNDevice(threading.Thread):
     def stop(self):
         self.stop_flag = True
         for sh in self.dtn:
-            self.dtn[sh].stop()
-            self.dtn[sh] = None
+            if self.dtn[sh] is not None:
+                self.dtn[sh].stop()
+                self.dtn[sh] = None
         self.close_all_sockets()
 
     def open_listener(self):

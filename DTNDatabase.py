@@ -64,13 +64,6 @@ class DTNDatabase():
         conn.close()
         return res
 
-    def get_key_by_hash(self, hash):
-        cla = 'select id from data where hash={0}'.format(hash)
-        msgs = self.execute(cla)
-        if len(msgs) == 1:
-            return msgs[0][0]
-        return -1
-
     def execute(self, s):
         """ A function for handling common script
         """

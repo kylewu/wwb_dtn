@@ -8,8 +8,8 @@ __version__ = '0.1'
 
 from DTNSiteManager import ServerSiteManager
 
-#ip='130.238.8.164'
+ip='130.238.8.164'
 #ip='127.0.0.1'
-ip = '130.243.144.12'
+#ip = '130.243.144.12'
 sm = ServerSiteManager(dtn_port=15555, bcast_port=16666, monitor_port=17777,vclient_port = 188888, ip=ip)
 sm.start()

@@ -69,14 +69,22 @@ class DTNConnection(threading.Thread):
         # Set DTNConnection of this SH in Site Manager to None
         self.sm.dtn[self.sh] = None
 
+    def _get_last_key(self, hash):
+        cla = "select id from data where hash='%s'" % hash
+        msgs = self.sm.db.execute(cla)
+        if len(msgs) == 1:
+            logger.debug('Last ID : %s' % msgs[0][0])
+            return msgs[0][0]
+        return -1
+
     def _get_all(self):
         add_where = ''
 
         # Start from last point
         if self.sm.last_hash[self.sh] != '':
-            last_key = self.sm.db.get_key(self.sm.last_hash[self.sh])
+            last_key = self._get_last_key(self.sm.last_hash[self.sh])
             if last_key != -1:
-                add_where += 'and id>%d' % last_key
+                add_where += 'and id>%s' % last_key
 
         if self.target == '*':
             
@@ -116,6 +124,10 @@ class DTNConnection(threading.Thread):
                 logger.debug('recv ACK')
                 # update last hash
                 self.sm.last_hash[self.sh] = msg.hash
+
+                # reach destination, set ack=1
+                if msg.dst == self.sh:
+                    self.sm.db.update('ack=1', "hash='%s'"%msg.hash)
                 return True
 
             else:
