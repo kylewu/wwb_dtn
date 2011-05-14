@@ -115,8 +115,8 @@ class BaseDTNDevice(threading.Thread):
     # TODO 
     def stop(self):
         self.stop_flag = True
-        for sh, conn in self.dtn:
-            conn.close()
+        for sh in self.dtn:
+            self.dtn[sh].stop()
             self.dtn[sh] = None
         self.close_all_sockets()
 
