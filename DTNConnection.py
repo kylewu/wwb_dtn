@@ -98,7 +98,7 @@ class DTNConnection(threading.Thread):
     def _send_msg(self, msg, n=0):
         """ Send DTNMessage """
 
-        if n > 3:
+        if n > 2:
             return
 
         try:
@@ -117,13 +117,13 @@ class DTNConnection(threading.Thread):
                 return True
 
             else:
-                logger.debug('no ACK, try to send again')
+                logger.debug('not ACK, try to send again')
                 # Error, try to send again
                 time.sleep(TIMEOUT)
                 return self._send_msg(msg, n+1)
 
         except socket.timeout:
-            logger.debug('no ACK, try to send again')
+            logger.debug('timeout, no ACK, try to send again')
             return self._send_msg(msg, n+1)
 
         except socket.error:
@@ -176,34 +176,43 @@ class DTNConnection(threading.Thread):
         if dtn_msg.type != 'ACK':
             self._send(self.conn_recv, 'ACK ' + dtn_msg.hash)
             logger.debug('send ACK ' + dtn_msg.hash)
+        else: # ACK
+            return
 
-            if dtn_msg.type == 'DST_ACK':
-                # set the match data ack=1
-                self.sm.db.update('ack=1', "hash='%s'"%dtn_msg.data)
+        if dtn_msg.type == 'DST_ACK':
+            # set the match data ack=1
+            self.sm.db.update('ack=1', "hash='%s'"%dtn_msg.data)
+            if dtn_msg.dst == self.my_sh:
+                self.sm.db.update('ack=1', "hash='%s'"%dtn_msg.hash)
 
         # Message reaches destination
         if dtn_msg.dst == self.my_sh:
-            dst_msg = DTNMessage()
-            dst_msg.time = int(time.time()*1000)
-            dst_msg.ack = 1
-            dst_msg.ip = self.sm.my_ip
-            dst_msg.port = self.sm.dtn_port
-            dst_msg.dst = dtn_msg.src
-            dst_msg.src = self.my_sh
-            dst_msg.type = 'DST_ACK'
-            dst_msg.data = dtn_msg.hash
-            dst_msg.hash = dst_msg.get_hash()
+            self.sm.db.update('ack=1', "hash='%s'"%dtn_msg.hash)
 
-            self.sm.db.insert_msg(dst_msg)
+            # New DST_ACK message
+            if dtn_msg.type != 'DST_ACK':
 
-            if len(self.msgs) > 0:
-                self.msgs.insert(0, dst_msg)
-            else:
-                res = self._send_msg(dst_msg)
-                if not res:
-                    print 'WHY'
-            
+                dst_msg = DTNMessage()
+                dst_msg.time = int(time.time()*1000)
+                dst_msg.ack = 1
+                dst_msg.ip = self.sm.my_ip
+                dst_msg.port = self.sm.dtn_port
+                dst_msg.dst = dtn_msg.src
+                dst_msg.src = self.my_sh
+                dst_msg.type = 'DST_ACK'
+                dst_msg.data = dtn_msg.hash
+                dst_msg.hash = dst_msg.get_hash()
 
+                self.sm.db.insert_msg(dst_msg)
+
+                if len(self.msgs) > 0:
+                    self.msgs.insert(0, dst_msg)
+                else:
+                    res = self._send_msg(dst_msg)
+                    if not res:
+                        print 'WHY'
+
+            # CMD 
             if dtn_msg.type == 'CMD':
 
                 cmd = dtn_msg.data
@@ -228,7 +237,9 @@ class DTNConnection(threading.Thread):
                 break
 
             try:
+                print 'recvvvvv'
                 self.buf += self.conn_recv.recv(65535)
+                print 'recveeeeee'
 
                 while self.buf.find('\n') >= 0:
                     msg, self.buf = self.buf.split('\n', 1)
@@ -240,6 +251,7 @@ class DTNConnection(threading.Thread):
                     self._recv_handle(msg)
                     if self.cb is not None:
                         self.cb(msg)
+                print 'aaaaa'
 
             except socket.timeout:
                 logger.debug("no incoming data")

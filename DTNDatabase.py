@@ -100,9 +100,9 @@ class DTNDatabase():
     # FOR TEST
     def select_all(self, where=None):
         if where is None:
-            cla = 'select hash, time, ip, port, src, dst, type, data from data where sent = 0'
+            cla = 'select * from data where sent = 0'
         else:
-            cla = 'select hash, time, ip, port, src, dst, type, data from data where sent = 0 where ' + where
+            cla = 'select * from data where sent = 0 where ' + where
         msgs = self.execute(cla)
         return msgs
 
