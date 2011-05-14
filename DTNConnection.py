@@ -25,11 +25,13 @@ class DTNConnection(threading.Thread):
         #self.mode = mode
         self.conn_send = conn_send
         self.conn_recv = conn_recv
+        self.conn_recv.settimeout(4)
 
         self.sm = sm
 
         self.my_sh = my_sh
         self.sh = sh
+        logger.debug('my_sh %s, sh %s' %(my_sh, sh))
 
         # FIXME need? Callback function
         self.cb = cb
@@ -205,6 +207,7 @@ class DTNConnection(threading.Thread):
 
                 self.sm.db.insert_msg(dst_msg)
 
+                # FIXME IMPORTANT
                 if len(self.msgs) > 0:
                     self.msgs.insert(0, dst_msg)
                 else:
@@ -237,14 +240,15 @@ class DTNConnection(threading.Thread):
                 break
 
             try:
-                self.buf += self.conn_recv.recv(65535)
+
+                self.buf += self.conn_recv.recv(1024)
 
                 while self.buf.find('\n') >= 0:
                     msg, self.buf = self.buf.split('\n', 1)
 
                     if msg == SEND_DONE:
                         self.recv_stop = True
-                        break
+                        continue
 
                     self._recv_handle(msg)
                     if self.cb is not None:
