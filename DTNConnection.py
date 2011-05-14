@@ -239,6 +239,7 @@ class DTNConnection(threading.Thread):
             try:
                 print 'recvvvvv'
                 self.buf += self.conn_recv.recv(65535)
+                print self.buf
                 print 'recveeeeee'
 
                 while self.buf.find('\n') >= 0:

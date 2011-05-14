@@ -100,6 +100,8 @@ class BaseDTNDevice(threading.Thread):
 
     def run(self):
 
+        self.stop_flag = False
+
         # open listener
         self.open_listener()
 
@@ -110,12 +112,13 @@ class BaseDTNDevice(threading.Thread):
                 logger.error(sys.exc_info()[0])
                 break
 
-    # FIXME
+    # TODO 
     def stop(self):
         self.stop_flag = True
+        for sh, conn in self.dtn:
+            conn.close()
+            self.dtn[sh] = None
         self.close_all_sockets()
-        if self.isAlive():
-            self.join()
 
     def open_listener(self):
         """ Open Listeners  
@@ -126,7 +129,7 @@ class BaseDTNDevice(threading.Thread):
 
     def close_all_sockets(self):
         """ Close all sockets """
-        readers = self.get_sockets(self.f_map)
+        readers = self.get_sockets(self.get_handle_map())
 
         for s in readers:
             if s is not None:
@@ -168,7 +171,7 @@ class BaseDTNDevice(threading.Thread):
         except socket.timeout:
             return
         except:
-            logger.error('error')
+            logger.error('work error')
             return
 
         for r in ready_to_read:
@@ -196,6 +199,7 @@ class BaseDTNDevice(threading.Thread):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         s.sendto(BCAST_MSG, ('<broadcast>', bcast_port))
+        logger.debug('send broadcast')
 
         s.settimeout(2)
 
@@ -205,8 +209,10 @@ class BaseDTNDevice(threading.Thread):
             s.close()
             return addr[0], int(buf)
 
-        except:
+        except socket.timeout:
             logger.debug('no feedback')
+        except :
+            logger.debug('bcast socket error')
 
         s.close()
         return None
@@ -426,8 +432,6 @@ class ClientSiteManager(BaseDTNSiteManager):
         self.server_port = kwargs.get('server_port', 0)
 
 class MobileSiteManager(BaseDTNDevice):
-    def __init__(self):
-        self.db = DTNDatabase(self.__class__.__name__)
-        self.sh = MOBILE_SH_INFO
-        #self.dtn = DTNConnection(bbbbbbbbbbb)
-
+    def __init__(self, **kwargs):
+        BaseDTNDevice.__init__(self, **kwargs)
+        self.sh = kwargs.get('sh', MOBILE_SH_INFO)

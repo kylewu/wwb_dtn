@@ -15,7 +15,7 @@ import sys
 import logging
 
 TIMEOUT = 0.5
-SOCKET_TIMEOUT = 2
+SOCKET_TIMEOUT = 4
 
 # Log Level, IMPORTANT
 LOGLEVEL = logging.DEBUG
