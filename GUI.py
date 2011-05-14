@@ -9,10 +9,9 @@ __version__ = '0.1'
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# gotoclass.py
-
 import wx
-from DTNSiteManager import SiteManagerCarrier
+
+from DTNSiteManager import MobileSiteManager
 
 class Example(wx.Frame):
   
@@ -24,7 +23,7 @@ class Example(wx.Frame):
         self.Centre()
         self.Show()     
 
-        self.carrier = SiteManagerCarrier()
+        self.mobile = MobileSiteManager(ip = '130.243.144.12')
         
     def InitUI(self):
     
@@ -90,9 +89,10 @@ class Example(wx.Frame):
 
     def btn1Click(self, evt):
         self.btn1.Disable()
-        if self.carrier.bcast(5555):
-            self.tc1.SetValue(self.carrier.server_ip)
-            self.tc2.SetValue(str(self.carrier.server_port))
+        res = self.mobile.bcast(16666)
+        if res is not None:
+            self.tc1.SetValue(res[0])
+            self.tc2.SetValue(res[1])
             self.tc4.AppendText('Get reply\n')
         self.btn1.Enable()
 
@@ -100,19 +100,18 @@ class Example(wx.Frame):
         print self.tc4.GetValue()
         if self.btn2.LabelText == 'Start':
             self.tc4.AppendText('Start to work\n')
-            if not self.carrier.connect_to_server():
-                return
+            #if not self.mobile.connect_to_server():
+                #return
             self.tc4.AppendText('Successed in connecting to server, act as %s\n' % self.carrier.mode)
             self.btn2.SetLabel('Stop')
-            self.carrier.start()
+            #self.carrier.start()
         elif self.btn2.LabelText == 'Stop':
             self.tc4.AppendText('Stop\n')
-            self.carrier.stop()
+            #self.carrier.stop()
             self.btn2.SetLabel('Start')
 
 if __name__ == '__main__':
   
     app = wx.App()
-    Example(None, title='DTN Carrier')
+    Example(None, title='I am a great mobile device :)')
     app.MainLoop()
-
