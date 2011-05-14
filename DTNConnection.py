@@ -237,10 +237,7 @@ class DTNConnection(threading.Thread):
                 break
 
             try:
-                print 'recvvvvv'
                 self.buf += self.conn_recv.recv(65535)
-                print self.buf
-                print 'recveeeeee'
 
                 while self.buf.find('\n') >= 0:
                     msg, self.buf = self.buf.split('\n', 1)
@@ -252,7 +249,6 @@ class DTNConnection(threading.Thread):
                     self._recv_handle(msg)
                     if self.cb is not None:
                         self.cb(msg)
-                print 'aaaaa'
 
             except socket.timeout:
                 logger.debug("no incoming data")
@@ -281,10 +277,10 @@ class DTNConnection(threading.Thread):
             time.sleep(5)
 
         # Work is done, this instance of DTNConnection could be removed
-        logger.debug('clean')
         self.stop_flag = True
         self.recv_thread.join()
         self.clean()
+        logger.debug('clean done')
 
     def run(self):
         self.send_thread = threading.Thread(target=self._send_thread)
