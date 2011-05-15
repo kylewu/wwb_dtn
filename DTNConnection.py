@@ -78,24 +78,21 @@ class DTNConnection(threading.Thread):
         return -1
 
     def _get_all(self):
-        add_where = ''
+        base_where = "dst!='%s' and src!='%s' and ack!=1 and %d<=time+ttl" % (self.my_sh, self.sh, time.time()*1000)
 
         # Start from last point
         if self.sm.last_hash[self.sh] != '':
             last_key = self._get_last_key(self.sm.last_hash[self.sh])
             if last_key != -1:
-                add_where += 'and id>%s' % last_key
+                base_where += 'and id>%s' % last_key
 
         if self.target == '*':
-            
-            # FIXME
-            return self.sm.db.select_msg("dst!='%s' and src!='%s' and ack!=1 %s" % (self.my_sh, self.sh, add_where))
+            return self.sm.db.select_msg(base_where)
         else:
             ids = self.target.split()
             res = list()
             for id in ids:
-                # FIXME
-                res += self.sm.db.select_msg("dst!='%s' and src!='%s' dst == '%s' %s" % (self.my_sh, self.sh, id, add_where))
+                res += self.sm.db.select_msg("%s and dst == '%s'" % (base_where, id))
             return res
 
     # FIXME old, no need any more

@@ -394,10 +394,9 @@ class BaseDTNSiteManager(BaseDTNDevice):
             print "UDP error", s
             sys.exit(1)
         else:
-            logger.debug('recv from vclient' + chunk)
+            logger.debug('recv from vclient ' + chunk)
             msg = DTNMessage()
             msg.handle(chunk)
-            #if msg.re_type == 'PING_RAW':
             if msg.type == 'PING':
                 # Notify Monitors
                 self.notify_monitors(chunk)

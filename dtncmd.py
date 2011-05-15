@@ -18,7 +18,7 @@ if len(sys.argv) < 3:
     sys.exit()
 t = str(int(time.time()))
 
-msg = '%s %s CMD %s' % (t, sys.argv[1], ' '.join(sys.argv[3:]))
+msg = '%s %s %d CMD %s' % (t, sys.argv[1], 24*60*60*1000, ' '.join(sys.argv[3:]))
 m = DTNMessage(msg)
 # TODO set message ip and port if possible
 

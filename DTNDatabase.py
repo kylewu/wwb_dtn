@@ -9,8 +9,11 @@ import os
 import sqlite3
 from DTNMessage import DTNMessage
 
-CREATE_EXE = 'create table data (id integer primary key, hash text, sent integer, ack integer, time interger, ip text,\
+CREATE_EXE = 'create table data (id integer primary key, hash text, sent integer, ack integer, ttl integer, time interger, ip text,\
                 port text, src text, dst text, type text, data text);'
+INSERT_EXE = 'insert into data (id, hash, sent, ack, ttl, time, ip, port, src, dst, type, data) SELECT ?, ?, ?, ?, ?,\
+                ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM data WHERE hash = ?);'
+
 
 class DTNDatabase():
 
@@ -32,12 +35,8 @@ class DTNDatabase():
     def insert_msg(self, m):
         """ Insert DTNMessage """
 
-        INSERT_S = 'insert into data (id, hash, sent, ack, time, ip, port, src, dst, type, data) SELECT ?, ?, ?, ?, ?,\
-        ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM data WHERE hash = ?);'
         conn = sqlite3.connect(self.db_name)
-
-        #conn.execute('insert into data values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', m.to_tuple())
-        conn.execute(INSERT_S, tuple(list(m.to_tuple())+[m.hash]))
+        conn.execute(INSERT_EXE, tuple(list(m.to_tuple())+[m.hash]))
         conn.commit()
         conn.close()
 
@@ -45,7 +44,7 @@ class DTNDatabase():
         """ Return a list of DTNMessage
         """
         conn = sqlite3.connect(self.db_name)
-        cur = conn.execute('select hash, time, ip, port, src, dst, type, data from data where {0}'.format(where))
+        cur = conn.execute('select hash, time, ip, port, src, dst, type, data, ttl from data where {0}'.format(where))
         msgs = cur.fetchall()
         res = list()
         for msg in msgs:
@@ -58,6 +57,7 @@ class DTNDatabase():
             m.dst = msg[5]
             m.type = msg[6]
             m.data = msg[7]
+            m.ttl = msg[8]
 
             res.append(m)
 
@@ -82,14 +82,6 @@ class DTNDatabase():
         conn.close()
         return True
 
-    # FIXME old
-    def update_ack(self, h):
-        conn = sqlite3.connect(self.db_name)
-        t = (h,)
-        conn.execute('update data set ack=1 where hash = ?', t)
-        conn.commit()
-        conn.close()
-
     # FOR TEST
     def select_all(self, where=None):
         if where is None:
@@ -97,13 +89,4 @@ class DTNDatabase():
         else:
             cla = 'select * from data where sent = 0 where ' + where
         msgs = self.execute(cla)
-        return msgs
-
-    # FIXME old, to be removed
-    def select_type(self, m):
-        conn = sqlite3.connect(self.db_name)
-        t = (m,)
-        cur = conn.execute('select hash, time, ip, port, src, dst, type, data from data where type=? and sent = -1', t)
-        msgs = cur.fetchall()
-        conn.close()
         return msgs

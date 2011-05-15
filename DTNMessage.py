@@ -27,34 +27,19 @@ PING_RAW_re = re.compile(
         "(?P<time>\d+) (?P<ip>[\d+\.]+):(?P<port>\d+) PING (?P<src>[^ ]*) {(?P<data>[^}]+)}.*"
         )
 # CMD msg from Monitor
-CMD_RAW_re = re.compile('(?P<time>\d+) (?P<dst>[^ ]*) CMD {(?P<cmd>[^}]+)}.*')
+CMD_RAW_re = re.compile('(?P<time>\d+) (?P<dst>[^ ]*) (?P<ttl>\d+) CMD {(?P<cmd>[^}]+)}.*')
 
 # ACK msg in WSN
 ACK_re = re.compile("ACK (?P<hash>[^ ]+)")
 
 # Message in WSN
 MSG_re = re.compile(
-        "(?P<hash>[a-z0-9]+) (?P<time>\d+) (?P<ip>[\d+\.]+) (?P<port>\d+) (?P<src>[^ ]*) (?P<dst>[^ ]*) (?P<type>[^ ]*) {(?P<data>[^}]+)}.*"
+        "(?P<hash>[a-z0-9]+) (?P<ttl>\d+) (?P<time>\d+) (?P<ip>[\d+\.]+) (?P<port>\d+) (?P<src>[^ ]*) (?P<dst>[^ ]*) (?P<type>[^ ]*) {(?P<data>[^}]+)}.*"
         )
 
-# MESSAGES in WSN -----------------------------------------------------
-# TODO PING msg 
-#PING_re = re.compile(
-        #"(?P<hash>[a-z0-9]+) (?P<time>\d+) (?P<ip>[\d+\.]+) (?P<port>\d+) (?P<src>[^ ]*) (?P<dst>[^ ]*) PING {(?P<data>[^}]+)}.*"
-        #)
-# TODO CMD msg 
-#CMD_re = re.compile("(?P<hash>[a-z0-9]+) (?P<time>\d+) (?P<ip>[\d+\.]+) (?P<port>\d+) (?P<src>[^ ]*) (?P<dst>[^ ]*) CMD {(?P<cmd>[^}]+)}.*")
-# TODO CMS Result
-#CMD_RES_re = re.compile("(?P<hash>[a-z0-9]+) (?P<time>\d+) (?P<ip>[^ ]*) (?P<port>\d+) (?P<src>[^ ]*) (?P<dst[^ ]*) CMD_RES {(?P<cmd>[^}]+)}.*")
-
-# TODO ACK from DST
-#DST_ACK_re = re.compile(
-        #"(?P<hash>[a-z0-9]+) (?P<time>\d+) (?P<ip>[\d+\.]+) (?P<port>\d+) (?P<src>[^ ]*) (?P<dst>[^ ]*) DST_ACK {(?P<data>[^}]+)}.*"
-        #)
-
-# -----------------------------------------------------
-
 class DTNMessage():
+    """ An abstraction class of messages in WSN """
+
     def __init__(self):
         # return value / re type
         #self.re_type = None
@@ -68,7 +53,7 @@ class DTNMessage():
         #self.sent_time = ''
         self.ack  = 0
         #self.ack_time = ''
-        self.ttl = 2*24*60*60   # 2d
+        self.ttl = 2*24*60*60*1000   # 2d
         self.time = 0
         self.ip   = ''
         self.port = ''
@@ -86,20 +71,20 @@ class DTNMessage():
 
     def to_tuple(self):
         """ Generate tuple used in Database"""
-        return None, self.hash, self.sent, self.ack, self.time, self.ip, self.port, self.src, self.dst, self.type, self.data 
+        return None, self.hash, self.sent, self.ack, self.ttl, self.time, self.ip, self.port, self.src, self.dst, self.type, self.data 
 
     def _to_msg(self):
         """ Message without hash """
-        return '%d %s %s %s %s %s {%s}' \
-                % (self.time, self.ip, self.port, self.src, self.dst, self.type, self.data)
+        return '%d %d %s %s %s %s %s {%s}' \
+                % (self.ttl, self.time, self.ip, self.port, self.src, self.dst, self.type, self.data)
 
     def to_msg(self):
         """ Message with hash """
-        return '%s %d %s %s %s %s %s {%s}' \
-                % (self.hash, self.time, self.ip, self.port, self.src, self.dst, self.type, self.data)
+        return '%s %d %d %s %s %s %s %s {%s}' \
+                % (self.hash, self.ttl, self.time, self.ip, self.port, self.src, self.dst, self.type, self.data)
 
     ###########
-    # HASH, SENT, ACK, TIME, IP, PORT, SRC, DST, TYPE, ATTR
+    # HASH, SENT, ACK, TTL, TIME, IP, PORT, SRC, DST, TYPE, ATTR
     ###########
     def handle(self, msg):
         self.msg = msg # keep a local copy of msg
@@ -113,8 +98,8 @@ class DTNMessage():
 
         m = PING_RAW_re.match(msg)
         if m is not None:
-            print 'PING_RAW'
             #self.re_type = PING_RAW 
+            self.ttl = 2*24*60*60*1000
             self.time = int(m.group('time'))
             self.ip =  m.group('ip')
             self.port = m.group('port')
@@ -128,6 +113,7 @@ class DTNMessage():
         m = CMD_RAW_re.match(msg)
         if m is not None:
             #self.re_type = CMD_RAW
+            self.ttl = int(m.group('ttl'))
             self.time = int(m.group('time'))
             self.ip = 'SERVER'
             self.port = 'PORT'
@@ -144,6 +130,7 @@ class DTNMessage():
             self.hash = m.group('hash')
             self.sent = 0
             self.ack = 0
+            self.ttl = int(m.group('ttl'))
             self.time = int(m.group('time'))
             self.ip = m.group('ip')
             self.port = m.group('port')
@@ -152,49 +139,5 @@ class DTNMessage():
             self.type = m.group('type')
             self.data = m.group('data')
             return True
-
-        # TODO remove the following
-        #m = PING_re.match(msg)
-        #if m is not None:
-            #self.re_type = PING
-            #self.hash = m.group('hash')
-            #self.sent = -1
-            #self.time = m.group('time')
-            #self.ip = m.group('ip')
-            #self.port = m.group('port')
-            ##self.pre = pre
-            #self.src = m.group('src')
-            #self.dst = m.group('dst')
-            #self.type = 'PING'
-            #self.data = '{%s}' % m.group('data')
-            #return
-
-        #m = CMD_re.match(msg)
-        #if m is not None:
-            #self.re_type = CMD
-            #self.hash = m.group('hash')
-            #self.sent = -1
-            #self.time = m.group('time')
-            #self.ip = m.group('ip')
-            #self.port = m.group('port')
-            #self.src = m.group('src')
-            #self.dst = m.group('dst')
-            #self.type = 'CMD'
-            #self.data = '{%s}' % m.group('cmd')
-            #return
-        
-        #m = DST_ACK_re.match(msg)
-        #if m is not None:
-            #self.re_type = DST_ACK
-            #self.hash = m.group('hash')
-            #self.sent = -1
-            #self.time = m.group('time')
-            #self.ip = m.group('ip')
-            #self.port = m.group('port')
-            #self.src = m.group('src')
-            #self.dst = m.group('dst')
-            #self.type = 'DST_ACK'
-            #self.data = '{%s}' % m.group('data')
-            #return
 
         return False
