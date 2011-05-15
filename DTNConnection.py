@@ -84,7 +84,7 @@ class DTNConnection(threading.Thread):
         if self.sm.last_hash[self.sh] != '':
             last_key = self._get_last_key(self.sm.last_hash[self.sh])
             if last_key != -1:
-                base_where += 'and id>%s' % last_key
+                base_where += ' and id>%s' % last_key
 
         if self.target == '*':
             return self.sm.db.select_msg(base_where)
@@ -177,12 +177,17 @@ class DTNConnection(threading.Thread):
             logger.debug('cannot recognize message ' + msg)
             return 
 
-        self.sm.db.insert_msg(dtn_msg)
+        if dtn_msg.type == 'DST_ACK':
+            self.sm.db.insert_dst_ack(dtn_msg)
+            # set the match data ack=1
+            self.sm.db.update('ack=1', "hash='%s'"%dtn_msg.data)
+            #if dtn_msg.dst == self.my_sh:
+                #self.sm.db.update('ack=1', "hash='%s'"%dtn_msg.hash)
+        else:
+            self.sm.db.insert_msg(dtn_msg)
 
-        #logger.debug('recv %s : %s' % (dtn_msg.re_type, msg))
         logger.debug('recv %s : %s' % (dtn_msg.type, msg))
 
-        #if dtn_msg.re_type != 'ACK':
         # Any messages but ACK should send ACK
         if dtn_msg.type != 'ACK':
             self._send(self.conn_recv, 'ACK ' + dtn_msg.hash)
@@ -190,11 +195,11 @@ class DTNConnection(threading.Thread):
         else: # ACK
             return
 
-        if dtn_msg.type == 'DST_ACK':
-            # set the match data ack=1
-            self.sm.db.update('ack=1', "hash='%s'"%dtn_msg.data)
-            if dtn_msg.dst == self.my_sh:
-                self.sm.db.update('ack=1', "hash='%s'"%dtn_msg.hash)
+        #if dtn_msg.type == 'DST_ACK':
+            ## set the match data ack=1
+            #self.sm.db.update('ack=1', "hash='%s'"%dtn_msg.data)
+            #if dtn_msg.dst == self.my_sh:
+                #self.sm.db.update('ack=1', "hash='%s'"%dtn_msg.hash)
 
         # Message reaches destination
         if dtn_msg.dst == self.my_sh:
@@ -214,7 +219,7 @@ class DTNConnection(threading.Thread):
                 dst_msg.data = dtn_msg.hash
                 dst_msg.hash = dst_msg.get_hash()
 
-                self.sm.db.insert_msg(dst_msg)
+                self.sm.db.insert_dst_ack(dst_msg)
 
                 # FIXME IMPORTANT
                 if len(self.msgs) > 0:

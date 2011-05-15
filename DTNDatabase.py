@@ -14,6 +14,8 @@ CREATE_EXE = 'create table data (id integer primary key, hash text, sent integer
 INSERT_EXE = 'insert into data (id, hash, sent, ack, ttl, time, ip, port, src, dst, type, data) SELECT ?, ?, ?, ?, ?,\
                 ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM data WHERE hash = ?);'
 
+INSERT_DST_EXE = 'insert into data (id, hash, sent, ack, ttl, time, ip, port, src, dst, type, data) SELECT ?, ?, ?, ?, ?,\
+                ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM data WHERE data = ?);'
 
 class DTNDatabase():
 
@@ -37,6 +39,13 @@ class DTNDatabase():
 
         conn = sqlite3.connect(self.db_name)
         conn.execute(INSERT_EXE, tuple(list(m.to_tuple())+[m.hash]))
+        conn.commit()
+        conn.close()
+    def insert_dst_ack(self, m):
+        """ Insert DST_ACK """
+
+        conn = sqlite3.connect(self.db_name)
+        conn.execute(INSERT_DST_EXE, tuple(list(m.to_tuple())+[m.data]))
         conn.commit()
         conn.close()
 
