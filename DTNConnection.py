@@ -238,12 +238,34 @@ class DTNConnection(threading.Thread):
             # CMD 
             if dtn_msg.type == 'CMD':
 
+                # Run
                 cmd = dtn_msg.data
-                # TODO check this
                 logger.debug('recv CMD : %s', cmd)
                 import commands
                 res = commands.getstatusoutput(cmd)
-                logger.debug(res)
+                logger.debug('CMD result :' + str(res))
+
+                # Send CMD_RES
+                res_msg = DTNMessage()
+                res_msg.time = int(time.time()*1000)
+                res_msg.ack = 0
+                res_msg.ip = self.sm.my_ip
+                res_msg.port = self.sm.dtn_port
+                res_msg.dst = dtn_msg.src
+                res_msg.src = self.my_sh
+                res_msg.type = 'CMD_RES'
+                res_msg.data = str(res)
+                res_msg.hash = res_msg.get_hash()
+
+                self.sm.db.insert_msg(res_msg)
+
+                # FIXME IMPORTANT
+                if len(self.msgs) > 0:
+                    self.msgs.insert(0, res_msg)
+                else:
+                    res = self._send_msg(res_msg)
+                    if not res:
+                        print 'WHY'
 
         return True
 

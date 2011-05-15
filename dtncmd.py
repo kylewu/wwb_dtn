@@ -15,6 +15,7 @@ from DTNMessage import DTNMessage
 # dtncmd HOST NODE {CMD}
 
 if len(sys.argv) < 3:
+    print 'python dtncmd.py 001E8C6C9172 ls'
     sys.exit()
 t = int(time.time()*1000)
 

@@ -362,6 +362,28 @@ class BaseDTNSiteManager(BaseDTNDevice):
         self.server_ip = kwargs.get('server_ip', 'SERVER')
         self.server_port = kwargs.get('server_port', 0)
 
+        self.auto_connect = kwargs.get('auto_connect', False)
+
+        self.conn_thread = threading.Thread(target=self._conn_thread)
+
+    def sub_init(self):
+        if self.auto_connect:
+            self.conn_thread.start()
+
+    def _conn_thread(self):
+        if self.server_port is None:
+            return
+        while True:
+            import time
+            time.sleep(30)
+
+            if self.server_connected:
+                continue
+
+            logger.debug('Client try to connect to server')
+            if self.connect_to_sm(self.server_ip, self.server_port):
+                self.server_connected = True
+
     def get_handle_map(self):
         """docstring for get_map"""
         f_map = BaseDTNDevice.get_handle_map(self)
@@ -436,6 +458,7 @@ class ServerSiteManager(BaseDTNSiteManager):
     def __init__(self, **kwargs):
         BaseDTNSiteManager.__init__(self, **kwargs)
         self.sh = SERVER_SH_INFO
+        self.auto_connect = False
 
 class ClientSiteManager(BaseDTNSiteManager):
     def __init__(self, **kwargs):
@@ -444,25 +467,6 @@ class ClientSiteManager(BaseDTNSiteManager):
         import time
         self.sh = kwargs.get('sh', 'CLIENT %d'%int(time.time()))
 
-        self.auto_connect = kwargs.get('auto_connect', False)
-
-        self.conn_thread = threading.Thread(target=self._conn_thread)
-
-    def sub_init(self):
-        if self.auto_connect:
-            self.conn_thread.start()
-
-    def _conn_thread(self):
-        while True:
-            import time
-            time.sleep(30)
-
-            if self.server_connected:
-                continue
-
-            logger.debug('Client try to connect to server')
-            if self.connect_to_sm(self.server_ip, self.server_port):
-                self.server_connected = True
 
 class MobileSiteManager(BaseDTNDevice):
     def __init__(self, **kwargs):
