@@ -3,19 +3,21 @@
 __author__  = 'Wenbin Wu <admin@wenbinwu.com>'
 __credits__ = 'Python best'
 __date__    = 'Fri 11 Mar 2011 02:01:11 PM CET'
-__version__ = '0.4'
+__version__ = '0.6'
 
 import socket
 import time
 import threading
 
 import DTN
+import DTNSiteManager
 from DTN import logger
 from DTNMessage import DTNMessage
 
 TIMEOUT = 5
 
 SEND_DONE = 'FINISH'
+UNKNOWN_MSG = 'UNKOWN'
 
 class DTNConnection(threading.Thread):
 
@@ -68,6 +70,8 @@ class DTNConnection(threading.Thread):
 
         # Set DTNConnection of this SH in Site Manager to None
         self.sm.dtn[self.sh] = None
+        if self.sh == DTNSiteManager.SERVER_SH_INFO:
+            self.sm.server_connected = False
 
     def _get_last_key(self, hash):
         cla = "select id from data where hash='%s'" % hash
@@ -126,7 +130,8 @@ class DTNConnection(threading.Thread):
                 if msg.dst == self.sh:
                     self.sm.db.update('ack=1', "hash='%s'"%msg.hash)
                 return True
-
+            elif res == UNKNOWN_MSG:
+                return True
             else:
                 logger.debug('not ACK, try to send again')
                 # Error, try to send again
@@ -175,6 +180,7 @@ class DTNConnection(threading.Thread):
         dtn_msg = DTNMessage()
         if not dtn_msg.handle(msg):
             logger.debug('cannot recognize message ' + msg)
+            self._send(self.conn_recv, UNKNOWN_MSG)
             return 
 
         if dtn_msg.type == 'DST_ACK':

@@ -49,9 +49,6 @@ class BaseDTNDevice(threading.Thread):
     def __init__(self, **kwargs):
         threading.Thread.__init__(self)
 
-        # important when broadcasting
-        self.mode = ''
-
         # FIXME find a better Database name
         self.db = DTNDatabase(self.__class__.__name__)
 
@@ -86,8 +83,9 @@ class BaseDTNDevice(threading.Thread):
         # (SH, HASH)
         self.last_hash = dict()
 
-        # stop flag
+        # flags
         self.stop_flag = False
+        self.server_connected = False
 
         # FIXME check if I need this
         self.bufs = dict()
@@ -98,8 +96,12 @@ class BaseDTNDevice(threading.Thread):
     def sighandler(self, signum, frame):
         self.stop()
 
+    def sub_init(self):
+        pass
+
     def run(self):
 
+        self.sub_init()
         self.stop_flag = False
 
         # open listener
@@ -259,13 +261,15 @@ class BaseDTNDevice(threading.Thread):
             self.dtn[sh] = dtn_conn
             if not self.last_hash.has_key(sh):
                 self.last_hash[sh] = ''
+            if sh == SERVER_SH_INFO:
+                self.server_connected = True
             logger.info('New DTN connection established')
             dtn_conn.start()
 
     def connect_to_sm(self, ip, port):
         """ connect to specific IP:PORT
         """
-        logger.info('Try to connect to Site Manager and establish DTN connection')
+        logger.debug('Try to connect to Site Manager and establish DTN connection')
         # Generate a random port for listening
         random_n = 1
         while True:
@@ -317,6 +321,8 @@ class BaseDTNDevice(threading.Thread):
             self.dtn[sh] = dtn_conn
             if not self.last_hash.has_key(sh):
                 self.last_hash[sh] = ''
+            if sh == SERVER_SH_INFO:
+                self.server_connected = True
             logger.info('New DTN connection established')
             dtn_conn.start()
 
@@ -326,6 +332,15 @@ class BaseDTNDevice(threading.Thread):
         DTN._cleanup_socket(listener)
 
         return False
+
+    def stop_sh(self, sh):
+        if self.dtn[sh].has_key(sh):
+            self.dtn[sh].stop()
+        else:
+            logger.warning("no connection to %s" % sh)
+
+    def list_connected_sh(self):
+        return self.dtn.keys()
 
 class BaseDTNSiteManager(BaseDTNDevice):
     """ Compare to BaseDTNDevice
@@ -342,6 +357,10 @@ class BaseDTNSiteManager(BaseDTNDevice):
         self.vclient_port = kwargs.get('vclient_port', 8888)
         self.vclient_listen = None
         self.vclient_sockets = list()
+
+        # Server Info
+        self.server_ip = kwargs.get('server_ip', 'SERVER')
+        self.server_port = kwargs.get('server_port', 0)
 
     def get_handle_map(self):
         """docstring for get_map"""
@@ -416,20 +435,34 @@ class BaseDTNSiteManager(BaseDTNDevice):
 class ServerSiteManager(BaseDTNSiteManager):
     def __init__(self, **kwargs):
         BaseDTNSiteManager.__init__(self, **kwargs)
-        # MODE
-        self.mode = 'SERVER'
         self.sh = SERVER_SH_INFO
-
-
 
 class ClientSiteManager(BaseDTNSiteManager):
     def __init__(self, **kwargs):
         BaseDTNSiteManager.__init__(self, **kwargs)
 
-        self.mode = 'CLIENT'
-        # Server Info
-        self.server_ip = kwargs.get('server_ip', '')
-        self.server_port = kwargs.get('server_port', 0)
+        import time
+        self.sh = kwargs.get('sh', 'CLIENT %d'%int(time.time()))
+
+        self.auto_connect = kwargs.get('auto_connect', False)
+
+        self.conn_thread = threading.Thread(target=self._conn_thread)
+
+    def sub_init(self):
+        if self.auto_connect:
+            self.conn_thread.start()
+
+    def _conn_thread(self):
+        while True:
+            import time
+            time.sleep(30)
+
+            if self.server_connected:
+                continue
+
+            logger.debug('Client try to connect to server')
+            if self.connect_to_sm(self.server_ip, self.server_port):
+                self.server_connected = True
 
 class MobileSiteManager(BaseDTNDevice):
     def __init__(self, **kwargs):

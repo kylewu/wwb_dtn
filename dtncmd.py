@@ -16,10 +16,12 @@ from DTNMessage import DTNMessage
 
 if len(sys.argv) < 3:
     sys.exit()
-t = str(int(time.time()))
+t = int(time.time()*1000)
 
-msg = '%s %s %d CMD %s' % (t, sys.argv[1], 24*60*60*1000, ' '.join(sys.argv[3:]))
-m = DTNMessage(msg)
+msg = '%d %s %d CMD {%s}' % (t, sys.argv[1], 24*60*60*1000, ' '.join(sys.argv[2:]))
+m = DTNMessage()
+m.handle(msg)
+
 # TODO set message ip and port if possible
 
 db = DTNDatabase('ServerSiteManager')

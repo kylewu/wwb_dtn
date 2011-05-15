@@ -34,7 +34,7 @@ ACK_re = re.compile("ACK (?P<hash>[^ ]+)")
 
 # Message in WSN
 MSG_re = re.compile(
-        "(?P<hash>[a-z0-9]+) (?P<ttl>\d+) (?P<time>\d+) (?P<ip>[\d+\.]+) (?P<port>\d+) (?P<src>[^ ]*) (?P<dst>[^ ]*) (?P<type>[^ ]*) {(?P<data>[^}]+)}.*"
+        "(?P<hash>[a-z0-9]+) (?P<ttl>\d+) (?P<time>\d+) (?P<ip>[^ ]*) (?P<port>[^ ]*) (?P<src>[^ ]*) (?P<dst>[^ ]*) (?P<type>[^ ]*) {(?P<data>[^}]+)}.*"
         )
 
 class DTNMessage():
@@ -112,7 +112,6 @@ class DTNMessage():
 
         m = CMD_RAW_re.match(msg)
         if m is not None:
-            #self.re_type = CMD_RAW
             self.ttl = int(m.group('ttl'))
             self.time = int(m.group('time'))
             self.ip = 'SERVER'
