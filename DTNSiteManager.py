@@ -438,6 +438,7 @@ class BaseDTNSiteManager(BaseDTNDevice):
             logger.debug('recv from vclient ' + chunk)
             msg = DTNMessage()
             msg.handle(chunk)
+            msg.src = self.sh
             if msg.type == 'PING':
                 # Notify Monitors
                 self.notify_monitors(chunk)

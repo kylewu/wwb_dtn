@@ -77,7 +77,7 @@ class DTNConnection(threading.Thread):
         cla = "select id from data where hash='%s'" % hash
         msgs = self.sm.db.execute(cla)
         if len(msgs) == 1:
-            logger.debug('Last ID : %s' % msgs[0][0])
+            logger.info('Last ID : %s' % msgs[0][0])
             return msgs[0][0]
         return -1
 
