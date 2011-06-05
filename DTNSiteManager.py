@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 __author__  = 'Wenbin Wu <admin@wenbinwu.com>'
-__credits__ = 'Python best'
 __date__    = 'Wed Feb 16 11:13:04 2011'
-__version__ = '0.4'
+__version__ = '0.5'
 
 import sys
 import select
@@ -50,10 +49,11 @@ class BaseDTNDevice(threading.Thread):
         threading.Thread.__init__(self)
 
         # FIXME find a better Database name
-        self.db = DTNDatabase(self.__class__.__name__)
+        self.db_name = kwargs.get('db_name', self.__class__.__name__)
+        self.db = DTNDatabase(self.db_name)
 
         # IP
-        self.my_ip = kwargs.get('ip', socket.gethostbyname(socket.gethostname()))
+        self.my_ip = kwargs.get('ip', '127.0.0.1')#socket.gethostbyname(socket.gethostname()))
 
         self.dtn_port = kwargs.get('dtn_port', 5555)
         self.dtn_listen = None
@@ -363,6 +363,7 @@ class BaseDTNSiteManager(BaseDTNDevice):
         self.server_port = kwargs.get('server_port', 0)
 
         self.auto_connect = kwargs.get('auto_connect', False)
+        self.server_connected = False
 
         self.conn_thread = threading.Thread(target=self._conn_thread)
 

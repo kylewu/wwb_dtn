@@ -13,7 +13,8 @@ HELP = 'c : connect\nb : broadcast\nk : stop\ns : start\nq : quit'
 #home
 #ip = '130.243.144.12'
 #uu
-ip = '130.238.8.164'
+#ip = '130.238.8.164'
+ip = '192.168.100.50'
 
 dtn = None
 while True:

@@ -53,7 +53,7 @@ class DTNDatabase():
         """ Return a list of DTNMessage
         """
         conn = sqlite3.connect(self.db_name)
-        cur = conn.execute('select hash, time, ip, port, src, dst, type, data, ttl from data where {0}'.format(where))
+        cur = conn.execute('select hash, time, ip, port, src, dst, type, data, ttl from data where %s' % where)
         msgs = cur.fetchall()
         res = list()
         for msg in msgs:
@@ -85,7 +85,7 @@ class DTNDatabase():
 
     def update(self, set, where):
         conn = sqlite3.connect(self.db_name)
-        cla = 'update data set {0} where {1}'.format(set, where)
+        cla = 'update data set %s where %s' % (set, where)
         conn.execute(cla)
         conn.commit()
         conn.close()
