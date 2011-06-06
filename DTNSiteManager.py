@@ -122,6 +122,7 @@ class BaseDTNDevice(threading.Thread):
                 self.dtn[sh].stop()
                 self.dtn[sh] = None
         self.close_all_sockets()
+        self.db.close()
 
     def open_listener(self):
         """ Open Listeners  
@@ -178,7 +179,6 @@ class BaseDTNDevice(threading.Thread):
             return
 
         for r in ready_to_read:
-            print 'ready to read'
             for s in f_map:
                 if isinstance(s[0], socket.socket):
                     if r == s[0]:

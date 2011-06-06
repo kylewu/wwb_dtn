@@ -6,12 +6,17 @@ __credits__ = 'Python best'
 __date__    = 'Mon 11 Apr 2011 02:41:13 PM CEST'
 __version__ = '0.1'
 
-from DTNDatabase import DTNDatabase
 import sys
+import sqlite3
 
 if len(sys.argv) == 1:
     sys.exit()
 
-db = DTNDatabase(sys.argv[1])
-for msg in db.select_all():
+conn = sqlite3.connect(sys.argv[1])
+s = 'select * from data where sent = 0'
+cur = conn.execute(s)
+msgs = cur.fetchall()
+for msg in msgs:
     print msg
+conn.commit()
+conn.close()
