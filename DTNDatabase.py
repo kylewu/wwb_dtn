@@ -7,6 +7,7 @@ __version__ = '0.3'
 
 import os
 import sqlite3
+import threading
 from DTNMessage import DTNMessage
 
 CREATE_EXE = 'create table data (id integer primary key, hash text, sent integer, ack integer, ttl integer, time interger, ip text,\
@@ -17,7 +18,7 @@ INSERT_EXE = 'insert into data (id, hash, sent, ack, ttl, time, ip, port, src, d
 INSERT_DST_EXE = 'insert into data (id, hash, sent, ack, ttl, time, ip, port, src, dst, type, data) SELECT ?, ?, ?, ?, ?,\
                 ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM data WHERE data = ?);'
 
-class DTNDatabase():
+class DTNDatabase(threading.Thread):
 
     def __init__(self, name = 'DTN'):
         self.db_name = name

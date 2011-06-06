@@ -178,6 +178,7 @@ class BaseDTNDevice(threading.Thread):
             return
 
         for r in ready_to_read:
+            print 'ready to read'
             for s in f_map:
                 if isinstance(s[0], socket.socket):
                     if r == s[0]:
@@ -196,7 +197,7 @@ class BaseDTNDevice(threading.Thread):
         msg, addr = s.recvfrom(65535)
 
         # send back DTN Port
-        s.sendto('%d' % self.dtn_port, addr)
+        s.sendto('%s %d' % (self.my_ip, self.dtn_port), addr)
 
     def bcast(self, bcast_port):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -208,9 +209,9 @@ class BaseDTNDevice(threading.Thread):
 
         try:
             buf, addr = s.recvfrom(2048)
-            logger.info('Received from %s: %s' % (addr, buf))
+            logger.info('Received from %s: %s' % (buf.split()[0], buf.split()[1]))
             s.close()
-            return addr[0], int(buf)
+            return buf.split()[0], int(buf.split()[1])
 
         except socket.timeout:
             logger.debug('no feedback')

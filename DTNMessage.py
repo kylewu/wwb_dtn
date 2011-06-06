@@ -21,6 +21,8 @@ CMD = 'CMD'
 ACK = 'ACK'
 DST_ACK = 'DST_ACK'
 
+DEFAULT_TTL = 20*365*24*60*60*1000
+
 # RAW MESSAGES  -----------------------------------------------------
 # PING msg from VClient
 PING_RAW_re = re.compile(
@@ -53,7 +55,7 @@ class DTNMessage():
         #self.sent_time = ''
         self.ack  = 0
         #self.ack_time = ''
-        self.ttl = 2*24*60*60*1000   # 2d
+        self.ttl = DEFAULT_TTL
         self.time = 0
         self.ip   = ''
         self.port = ''
@@ -99,7 +101,7 @@ class DTNMessage():
         m = PING_RAW_re.match(msg)
         if m is not None:
             #self.re_type = PING_RAW 
-            self.ttl = 2*24*60*60*1000
+            self.ttl = DEFAULT_TTL
             self.time = int(m.group('time'))
             self.ip =  m.group('ip')
             self.port = m.group('port')

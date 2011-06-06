@@ -93,6 +93,7 @@ class DTNConnection(threading.Thread):
                 base_where += ' and id>%s' % last_key
 
         if self.target == '*':
+            print base_where
             return self.sm.db.select_msg(base_where)
         else:
             ids = self.target.split()
