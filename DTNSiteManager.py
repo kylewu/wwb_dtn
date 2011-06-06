@@ -226,52 +226,21 @@ class BaseDTNDevice(threading.Thread):
         conn_recv, remote = s.accept()
 
         data = conn_recv.recv(1024)
-        port = int(data.split()[0])
-        sh = data.split()[1]
-        tar = ' '.join(data.split()[2:])
-        logger.debug('Port: %d, SH: %s, Target: %s' % (port, sh, tar))
+        sh = data.split()[0]
+        tar = ' '.join(data.split()[1:])
+        logger.debug('SH: %s, Target: %s' % (sh, tar))
 
         if self.dtn.has_key(sh):
             logger.debug(self.dtn[sh])
+
         if self.dtn.has_key(sh) and self.dtn[sh] is not None:
             conn_recv.send(EXIST_ERR)
             logger.debug('DTN connection already exists between these two Site Managers')
-            return
-        else:
-            conn_recv.send(SUCCESS_INFO)
+            return False
 
-        # remote[0] is IP
-        # remote[1] is PORT
-        conn_send = DTN._tcp_connect(remote[0], port)
-
-        if conn_send is not None:
-            # send my SH info
-            conn_send.send('%s %s' % (self.sh, self.target))
-
-            data = conn_send.recv(1024) 
-            if data == EXIST_ERR:
-                logger.debug('DTN connection already exists between these two Site Managers')
-                return 
-            else:
-                logger.debug('Good')
-
-            # Ready
-
-            dtn_conn = DTNConnection(conn_send, conn_recv, self.sh, sh, tar, self)
-            self.dtn[sh] = dtn_conn
-            if not self.last_hash.has_key(sh):
-                self.last_hash[sh] = ''
-            if sh == SERVER_SH_INFO:
-                self.server_connected = True
-            logger.info('New DTN connection established')
-            dtn_conn.start()
-
-    def connect_to_sm(self, ip, port):
-        """ connect to specific IP:PORT
-        """
-        logger.debug('Try to connect to Site Manager and establish DTN connection')
         # Generate a random port for listening
         random_n = 1
+        listener = None
         while True:
             try:
                 listener = DTN._tcp_listen(self.my_ip, self.dtn_port+random_n)
@@ -280,56 +249,154 @@ class BaseDTNDevice(threading.Thread):
                 continue
 
             break
-        conn_send = DTN._tcp_connect(ip, port)
+        conn_recv.send('%s %d %s' % (self.sh, self.dtn_port+random_n, self.target))
+        data = conn_recv.recv(1024)
+
+        if data == EXIST_ERR:
+            logger.debug('DTN connection already exists between these two Site Managers')
+            return False
+
+        # wait for connection
+        listener.settimeout(5)
+        try:
+            conn_send, remote = listener.accept()
+        except socket.timeout:
+            logger.debug('timeout')
+            return False
+
+        # remote[0] is IP
+        # remote[1] is PORT
+        #conn_send = DTN._tcp_connect(remote[0], port)
 
         if conn_send is not None:
+            # send my SH info
+            #conn_send.send('%s %s' % (self.sh, self.target))
 
-            # send port information
-            conn_send.send('%d %s %s\n' % (self.dtn_port + random_n, self.sh, self.target))
-
-            data = conn_send.recv(1024) 
-            if data == EXIST_ERR:
-                logger.debug('DTN connection already exists between these two Site Managers')
-                return False
-            else:
-                logger.debug('Successed in sending port, sh and target info')
-
-            # wait for connection
-            listener.settimeout(5)
-            try:
-                conn_recv, remote = listener.accept()
-            except socket.timeout:
-                logger.debug('timeout')
-                return False
-
-            # Get SH info
-            data = conn_recv.recv(1024)
-            sh = data.split()[0]
-            tar = ' '.join(data.split()[1:])
-            logger.debug('SH: %s, Target: %s' % (sh, tar))
-            
-            # Check again
-            if self.dtn.has_key(sh) and self.dtn[sh] is not None:
-                conn_recv.send(EXIST_ERR)
-                logger.debug('DTN connection already exists between these two Site Managers')
-                return
-            else:
-                conn_recv.send(SUCCESS_INFO)
+            #data = conn_send.recv(1024) 
+            #if data == EXIST_ERR:
+                #logger.debug('DTN connection already exists between these two Site Managers')
+                #return 
+            #else:
+                #logger.debug('Good')
 
             # Ready
             dtn_conn = DTNConnection(conn_send, conn_recv, self.sh, sh, tar, self)
             self.dtn[sh] = dtn_conn
             if not self.last_hash.has_key(sh):
                 self.last_hash[sh] = ''
-            if sh == SERVER_SH_INFO:
-                self.server_connected = True
+            #if sh == SERVER_SH_INFO:
+                #self.server_connected = True
             logger.info('New DTN connection established')
             dtn_conn.start()
-
-            DTN._cleanup_socket(listener)
             return True
 
-        DTN._cleanup_socket(listener)
+        return False
+
+    def connect_to_sm(self, ip, port):
+        """ connect to specific IP:PORT
+        """
+        logger.debug('Try to connect to Site Manager and establish DTN connection')
+
+        conn_send = DTN._tcp_connect(ip, port)
+
+        if conn_send is not None:
+
+            # send information
+            conn_send.send('%s %s\n' % (self.sh, self.target))
+
+            data = conn_send.recv(1024) 
+            port_recv = 0
+
+            if data == EXIST_ERR:
+                logger.debug('DTN connection already exists between these two Site Managers')
+                return False
+
+            sh = data.split()[0]
+            port_recv = int(data.split()[1])
+            tar = ' '.join(data.split()[2:])
+            logger.debug('SH: %s, Port: %d, Target: %s' % (sh, port_recv, tar))
+
+            # check if site manager is connected
+            if self.dtn.has_key(sh) and self.dtn[sh] is not None:
+                conn_send.send(EXIST_ERR)
+                logger.debug('DTN connection already exists between these two Site Managers')
+                return
+            else:
+                conn_send.send(SUCCESS_INFO)
+
+            # connect to ip using another port
+            conn_recv = DTN._tcp_connect(ip, port_recv)
+
+            if conn_recv is not None:
+
+                # Ready
+                dtn_conn = DTNConnection(conn_send, conn_recv, self.sh, sh, tar, self)
+
+                self.dtn[sh] = dtn_conn
+                if not self.last_hash.has_key(sh):
+                    self.last_hash[sh] = ''
+
+                #if sh == SERVER_SH_INFO:
+                    #self.server_connected = True
+                logger.info('New DTN connection established')
+                dtn_conn.start()
+
+                #DTN._cleanup_socket(listener)
+                return True
+
+
+
+        ########
+        # Generate a random port for listening
+        #random_n = 1
+        #while True:
+            #try:
+                #listener = DTN._tcp_listen(self.my_ip, self.dtn_port+random_n)
+            #except:
+                #random_n += 1
+                #continue
+
+            #break
+
+        #conn_send = DTN._tcp_connect(ip, port)
+
+        #if conn_send is not None:
+
+            ## send port information
+            #conn_send.send('%d %s %s\n' % (self.dtn_port + random_n, self.sh, self.target))
+
+            #data = conn_send.recv(1024) 
+            #if data == EXIST_ERR:
+                #logger.debug('DTN connection already exists between these two Site Managers')
+                #return False
+            #else:
+                #logger.debug('Successed in sending port, sh and target info')
+
+            ## wait for connection
+            #listener.settimeout(5)
+            #try:
+                #conn_recv, remote = listener.accept()
+            #except socket.timeout:
+                #logger.debug('timeout')
+                #return False
+
+            ## Get SH info
+            #data = conn_recv.recv(1024)
+            #sh = data.split()[0]
+            #tar = ' '.join(data.split()[1:])
+            #logger.debug('SH: %s, Target: %s' % (sh, tar))
+            
+            ## Check again
+            #if self.dtn.has_key(sh) and self.dtn[sh] is not None:
+                #conn_recv.send(EXIST_ERR)
+                #logger.debug('DTN connection already exists between these two Site Managers')
+                #return
+            #else:
+                #conn_recv.send(SUCCESS_INFO)
+            ###############
+
+
+        #DTN._cleanup_socket(listener)
 
         return False
 
@@ -407,17 +474,17 @@ class BaseDTNSiteManager(BaseDTNDevice):
         """docstring for handle_vclient_sockets"""
         chunk = r.recv(1024)
         print self.name + ': receive data from vclient ->' + chunk
-        if chunk == '':
-            print self.name + ": Vclient disconnected", r
-            self.vclient_sockets.remove(r)
-            DTN._cleanup_socket(r)
+        #if chunk == '':
+            #print self.name + ": Vclient disconnected", r
+            #self.vclient_sockets.remove(r)
+            #DTN._cleanup_socket(r)
 
-        else:
-            self.bufs[r] += chunk
+        #else:
+            #self.bufs[r] += chunk
 
-            while self.bufs[r].find('\n') >= 0:
-                msg, self.bufs[r] = self.bufs[r].split('\n', 1)
-                self.db.insert(msg)
+            #while self.bufs[r].find('\n') >= 0:
+                #msg, self.bufs[r] = self.bufs[r].split('\n', 1)
+                #self.db.insert(msg)
 
     def handle_monitor_listen(self, s):
         """docstring for handle_monitor_listen"""
@@ -444,7 +511,11 @@ class BaseDTNSiteManager(BaseDTNDevice):
                 # Notify Monitors
                 self.notify_monitors(chunk)
                 # Save into database
-                self.db.insert_msg(msg)
+                try:
+                    self.db.insert_msg(msg)
+                except:
+                    logger.debug('error in inserting PING')
+
     
     def notify_monitors(self, msg):
         """ Notify Monitors when receiving a message """

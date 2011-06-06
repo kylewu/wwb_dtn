@@ -33,18 +33,22 @@ class DTNDatabase():
         conn = sqlite3.connect(self.db_name, check_same_thread = False)
         c = conn.cursor()
         c.executescript(CREATE_EXE) 
+        conn.commit()
+        conn.close()
 
     def insert_msg(self, m):
         """ Insert DTNMessage """
 
-        conn = sqlite3.connect(self.db_name)
+        #conn = sqlite3.connect(self.db_name, timeout=10)
+        conn = sqlite3.connect(self.db_name, check_same_thread = False)
         conn.execute(INSERT_EXE, tuple(list(m.to_tuple())+[m.hash]))
         conn.commit()
         conn.close()
     def insert_dst_ack(self, m):
         """ Insert DST_ACK """
 
-        conn = sqlite3.connect(self.db_name)
+        #conn = sqlite3.connect(self.db_name, timeout=10)
+        conn = sqlite3.connect(self.db_name, check_same_thread = False)
         conn.execute(INSERT_DST_EXE, tuple(list(m.to_tuple())+[m.data]))
         conn.commit()
         conn.close()
@@ -52,7 +56,8 @@ class DTNDatabase():
     def select_msg(self, where):
         """ Return a list of DTNMessage
         """
-        conn = sqlite3.connect(self.db_name)
+        #conn = sqlite3.connect(self.db_name, timeout=10)
+        conn = sqlite3.connect(self.db_name, check_same_thread = False)
         cur = conn.execute('select hash, time, ip, port, src, dst, type, data, ttl from data where %s' % where)
         msgs = cur.fetchall()
         res = list()
@@ -76,7 +81,8 @@ class DTNDatabase():
     def execute(self, s):
         """ A function for handling common script
         """
-        conn = sqlite3.connect(self.db_name)
+        #conn = sqlite3.connect(self.db_name, timeout=10)
+        conn = sqlite3.connect(self.db_name, check_same_thread = False)
         cur = conn.execute(s)
         msgs = cur.fetchall()
         conn.commit()
@@ -84,7 +90,7 @@ class DTNDatabase():
         return msgs
 
     def update(self, set, where):
-        conn = sqlite3.connect(self.db_name)
+        conn = sqlite3.connect(self.db_name, timeout=10)
         cla = 'update data set %s where %s' % (set, where)
         conn.execute(cla)
         conn.commit()
