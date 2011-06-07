@@ -18,7 +18,7 @@ TIMEOUT = 0.5
 SOCKET_TIMEOUT = 4
 
 # Log Level, IMPORTANT
-LOGLEVEL = logging.DEBUG
+LOGLEVEL = logging.INFO
 
 # global log variable
 logger = None
@@ -32,10 +32,10 @@ def init_log(name):
     logger.setLevel(LOGLEVEL)
 
     #create file handler and set level to debug
-    fh = logging.FileHandler("log")
-    fh.setLevel(logging.DEBUG)
+    fh = logging.FileHandler('log')
+    fh.setLevel(LOGLEVEL)
     ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(LOGLEVEL)
 
     #create formatter
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -48,8 +48,8 @@ def init_log(name):
     logger.addHandler(fh)
     logger.addHandler(ch)
 
-# INIT LOGGER
 init_log('DTN')
+
 
 def _tcp_listen(ip, port):
     try:

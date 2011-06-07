@@ -13,6 +13,7 @@ import signal
 
 import DTN
 from DTN import logger
+from DTN import init_log
 from DTNDatabase import DTNDatabase
 from DTNConnection import DTNConnection
 from DTNMessage import DTNMessage

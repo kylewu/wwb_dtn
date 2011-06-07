@@ -8,12 +8,11 @@ __version__ = '0.1'
 
 from DTNSiteManager import ServerSiteManager
 
-HELP = 'c : connect\nb : broadcast\nk : stop\ns : start\nq : quit'
+HELP = 'c : connect\nb : broadcast\ns : start\nq : quit'
 
-#home
-#ip = '130.243.144.12'
-#uu
-ip = '130.238.8.164'
+ip = '130.238.8.164' # UBUNTU
+#ip = '130.238.8.154' # Vincent
+#ip = '130.238.8.166' # Trapper
 
 dtn = None
 while True:
@@ -31,11 +30,6 @@ while True:
             print dtn.bcast(int(p))
         else:
             print 'please start dtn first'
-    elif c == 'k':
-        if dtn is not None:
-            print 'stop'
-            dtn.stop()
-            dtn = None
     elif c == 's':
         if dtn is None:
             print 'start'
@@ -43,5 +37,8 @@ while True:
             dtn.start()
     elif c == 'q':
         print 'quit'
+        dtn.stop()
+        import sys
+        sys.exit(0)
     else:
         print HELP

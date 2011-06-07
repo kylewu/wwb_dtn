@@ -93,7 +93,6 @@ class DTNConnection(threading.Thread):
                 base_where += ' and id>%s' % last_key
 
         if self.target == '*':
-            print base_where
             return self.sm.db.select_msg(base_where)
         else:
             ids = self.target.split()
@@ -160,7 +159,7 @@ class DTNConnection(threading.Thread):
             if not self.send_done:
                 # Get Messages from DB
                 self.msgs.extend(self._get_all())
-                logger.debug('Total %d messages to send' % len(self.msgs))
+                logger.info('Total %d messages to send' % len(self.msgs))
 
             while len(self.msgs) > 0:
                 msg = self.msgs.pop(0)
@@ -308,7 +307,7 @@ class DTNConnection(threading.Thread):
                 if self.stop_flag:
                     logger.error('Error happended or stop by user')
                 else:
-                    logger.info('asyn done')
+                    logger.debug('synchronization done')
                 break
 
             time.sleep(5)
@@ -319,6 +318,7 @@ class DTNConnection(threading.Thread):
         self.recv_thread.join()
         self.clean()
         logger.debug('clean done')
+        logger.info('synchronization done')
 
     def run(self):
         self.send_thread = threading.Thread(target=self._send_thread)
