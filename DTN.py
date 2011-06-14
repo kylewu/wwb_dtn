@@ -18,7 +18,7 @@ TIMEOUT = 0.5
 SOCKET_TIMEOUT = 4
 
 # Log Level, IMPORTANT
-LOGLEVEL = logging.INFO
+LOGLEVEL = logging.DEBUG
 
 # global log variable
 logger = None

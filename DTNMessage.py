@@ -13,7 +13,6 @@ import re
 # TIMESTAMP used in VClient is time.tv_sec*1000 + time.tv_usec/1000
 # In python, we can get this by using int(time.time()*1000)
 
-# TODO remove all these
 PING_RAW = 'PING_RAW'
 CMD_RAW = 'CMD_RAW'
 PING = 'PING'
@@ -50,6 +49,7 @@ class DTNMessage():
         self.msg = ''
 
         # DB attributes
+        self.id = 0
         self.hash = ''
         self.sent = 0
         #self.sent_time = ''
@@ -88,7 +88,7 @@ class DTNMessage():
     ###########
     # HASH, SENT, ACK, TTL, TIME, IP, PORT, SRC, DST, TYPE, ATTR
     ###########
-    def handle(self, msg):
+    def handle(self, msg, dst='SERVER'):
         self.msg = msg # keep a local copy of msg
 
         m = ACK_re.match(msg)
@@ -106,7 +106,7 @@ class DTNMessage():
             self.ip =  m.group('ip')
             self.port = m.group('port')
             self.src = m.group('src')
-            self.dst = 'SERVER'
+            self.dst = dst
             self.type = 'PING'
             self.data = m.group('data')
             self.hash = self.get_hash()

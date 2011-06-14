@@ -13,7 +13,6 @@ import signal
 
 import DTN
 from DTN import logger
-from DTN import init_log
 from DTNDatabase import DTNDatabase
 from DTNConnection import DTNConnection
 from DTNMessage import DTNMessage
@@ -49,7 +48,7 @@ class BaseDTNDevice(threading.Thread):
     def __init__(self, **kwargs):
         threading.Thread.__init__(self)
 
-        # FIXME find a better Database name
+        # TODO find a better Database name
         self.db_name = kwargs.get('db_name', self.__class__.__name__)
         self.db = DTNDatabase(self.db_name)
 
@@ -123,7 +122,9 @@ class BaseDTNDevice(threading.Thread):
                 self.dtn[sh].stop()
                 self.dtn[sh] = None
         self.close_all_sockets()
+
         self.db.close()
+        self.db.join()
 
     def open_listener(self):
         """ Open Listeners  
@@ -294,7 +295,7 @@ class BaseDTNDevice(threading.Thread):
 
         return False
 
-    def connect_to_sm(self, ip, port):
+    def connect_to_sm(self, ip, port, server_conn=False):
         """ connect to specific IP:PORT
         """
         logger.debug('Try to connect to Site Manager and establish DTN connection')
@@ -322,7 +323,7 @@ class BaseDTNDevice(threading.Thread):
             if self.dtn.has_key(sh) and self.dtn[sh] is not None:
                 conn_send.send(EXIST_ERR)
                 logger.debug('DTN connection already exists between these two Site Managers')
-                return
+                return False
             else:
                 conn_send.send(SUCCESS_INFO)
 
@@ -332,73 +333,16 @@ class BaseDTNDevice(threading.Thread):
             if conn_recv is not None:
 
                 # Ready
-                dtn_conn = DTNConnection(conn_send, conn_recv, self.sh, sh, tar, self)
+                dtn_conn = DTNConnection(conn_send, conn_recv, self.sh, sh, tar, self, server_conn=server_conn)
 
                 self.dtn[sh] = dtn_conn
                 if not self.last_hash.has_key(sh):
                     self.last_hash[sh] = ''
 
-                #if sh == SERVER_SH_INFO:
-                    #self.server_connected = True
                 logger.info('New DTN connection established')
                 dtn_conn.start()
 
-                #DTN._cleanup_socket(listener)
                 return True
-
-
-
-        ########
-        # Generate a random port for listening
-        #random_n = 1
-        #while True:
-            #try:
-                #listener = DTN._tcp_listen(self.my_ip, self.dtn_port+random_n)
-            #except:
-                #random_n += 1
-                #continue
-
-            #break
-
-        #conn_send = DTN._tcp_connect(ip, port)
-
-        #if conn_send is not None:
-
-            ## send port information
-            #conn_send.send('%d %s %s\n' % (self.dtn_port + random_n, self.sh, self.target))
-
-            #data = conn_send.recv(1024) 
-            #if data == EXIST_ERR:
-                #logger.debug('DTN connection already exists between these two Site Managers')
-                #return False
-            #else:
-                #logger.debug('Successed in sending port, sh and target info')
-
-            ## wait for connection
-            #listener.settimeout(5)
-            #try:
-                #conn_recv, remote = listener.accept()
-            #except socket.timeout:
-                #logger.debug('timeout')
-                #return False
-
-            ## Get SH info
-            #data = conn_recv.recv(1024)
-            #sh = data.split()[0]
-            #tar = ' '.join(data.split()[1:])
-            #logger.debug('SH: %s, Target: %s' % (sh, tar))
-            
-            ## Check again
-            #if self.dtn.has_key(sh) and self.dtn[sh] is not None:
-                #conn_recv.send(EXIST_ERR)
-                #logger.debug('DTN connection already exists between these two Site Managers')
-                #return
-            #else:
-                #conn_recv.send(SUCCESS_INFO)
-            ###############
-
-
-        #DTN._cleanup_socket(listener)
 
         return False
 
@@ -428,8 +372,9 @@ class BaseDTNSiteManager(BaseDTNDevice):
         self.vclient_sockets = list()
 
         # Server Info
-        self.server_ip = kwargs.get('server_ip', 'SERVER')
+        self.server_ip = kwargs.get('server_ip', '')
         self.server_port = kwargs.get('server_port', 0)
+        self.server_sh = kwargs.get('server_sh', 'SERVER')
 
         self.auto_connect = kwargs.get('auto_connect', False)
         self.server_connected = False
@@ -441,18 +386,22 @@ class BaseDTNSiteManager(BaseDTNDevice):
             self.conn_thread.start()
 
     def _conn_thread(self):
-        if self.server_port is None:
+        if self.server_port == 0:
             return
         while True:
             import time
-            time.sleep(30)
-
+            time.sleep(5)
+            
+            if self.stop_flag:
+                break
             if self.server_connected:
                 continue
 
             logger.debug('Client try to connect to server')
-            if self.connect_to_sm(self.server_ip, self.server_port):
+            if self.connect_to_sm(self.server_ip, self.server_port, True):
                 self.server_connected = True
+
+            time.sleep(10)
 
     def get_handle_map(self):
         """docstring for get_map"""
@@ -507,7 +456,7 @@ class BaseDTNSiteManager(BaseDTNDevice):
         else:
             logger.debug('recv from vclient ' + chunk)
             msg = DTNMessage()
-            msg.handle(chunk)
+            msg.handle(chunk, self.server_sh)
             msg.src = self.sh
             if msg.type == 'PING':
                 # Notify Monitors
@@ -533,7 +482,6 @@ class ServerSiteManager(BaseDTNSiteManager):
     def __init__(self, **kwargs):
         BaseDTNSiteManager.__init__(self, **kwargs)
         self.sh = SERVER_SH_INFO
-        self.auto_connect = False
 
 class ClientSiteManager(BaseDTNSiteManager):
     def __init__(self, **kwargs):
