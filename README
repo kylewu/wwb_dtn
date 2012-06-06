@@ -1,0 +1,27 @@
+How to run?
+------------
+
+mobile.py, trapper.py and vincent.py
+These three files are used to start site manger in different nodes.
+
+Arguments
+----------
+
+MobileSiteManager provides fewer arguments than BaseDTNSiteMnager
+	dtn = MobileSiteManager(dtn_port=25555, bcast_port=26666, ip=ip, db_name='mobile', sh='mobile', target='abc')
+
+BaseDTNSiteManager extends MobileSiteManager and more arguments can be
+configured. The following code shows all possible arguments.
+	dtn = BaseDTNSiteManager(dtn_port=15555, bcast_port=16666, server_ip=ip, server_port=5555,
+			vclient_port=4445,monitor_port=17777, ip=ip, sh='vincent', db_name='vincent')
+
+Whenever the site manager is created, it can run by calling `dtn.start()`
+
+In order to find neaby site mangers, call `dtn.bcast(port)` and it will print
+out the ip of the first responding site manager. To connect to another site manger manually, call `dtn.connect_to_sm(ip,
+port)`.
+
+TODO
+-----
+
+Currently, some operations need to be run manually. Therefore some scripts could be added to automate these processes.
